@@ -1,6 +1,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:parent_app/features/home_page/presentation/widgets/program_plan_widgets.dart';
+import '../bloc/attendance_bloc.dart';
+import '../bloc/attendance_event.dart';
 import '../bloc/billing_bloc.dart';
 import '../bloc/billing_state.dart';
 import '../bloc/child_bloc.dart';
@@ -84,10 +86,16 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
                     const SizedBox(height: 16),
                     const Center(child: ProfileAvatarSelector()),
                     const SizedBox(height: 8),
-                    const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: ChildInfoWidget(),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: ChildInfoWidget(
+                        onLoaded: (childId) {
+                          context.read<AttendanceChildBloc>().add(LoadAttendanceChild(childId)); // 🔹 childId پاس داده می‌شود
+                        },
+                      ),
                     ),
+
+
                     const SizedBox(height: 4),
                     const AISummaryWidget(),
 

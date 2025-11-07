@@ -11,14 +11,13 @@ class TagItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 200,
+      width: 140, // عرض کوچکتر برای جا شدن بیشتر
       decoration: BoxDecoration(
         color: Palette.bgBackground90,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0
-        ,horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 12), // padding کمتر
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -26,8 +25,14 @@ class TagItem extends StatelessWidget {
               name,
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
             ),
-            Text(subtitle, style: const TextStyle(fontSize: 14,fontWeight: FontWeight.w400
-            ,color: Palette.textMutedForeground)),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: Palette.textMutedForeground,
+              ),
+            ),
           ],
         ),
       ),

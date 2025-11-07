@@ -9,7 +9,7 @@ class GetAttendanceChildUseCase {
 
   GetAttendanceChildUseCase(this.repository);
 
-  Future<List<AttendanceChildEntity>> call() async {
-    return await repository.getAttendance();
+  Future<List<AttendanceChildEntity>> call(String childId) async { // 🔹 childId اضافه شد
+    return repository.getAttendance(childId); // 🔹 پاس دادن به Repository
   }
 }

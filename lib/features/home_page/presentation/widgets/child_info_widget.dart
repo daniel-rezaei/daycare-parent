@@ -9,7 +9,7 @@ import '../bloc/child_state.dart';
 
 
 class ChildInfoWidget extends StatefulWidget {
-  final VoidCallback? onLoaded;
+  final void Function(String childId)? onLoaded;
 
   const ChildInfoWidget({super.key, this.onLoaded});
 
@@ -23,7 +23,7 @@ class _ChildInfoWidgetState extends State<ChildInfoWidget> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.onLoaded?.call();
+   //   widget.onLoaded?.call();
     });
   }
 
@@ -48,12 +48,12 @@ class _ChildInfoWidgetState extends State<ChildInfoWidget> {
 
           final firstClass = child.classes.isNotEmpty ? child.classes.first : null;
 
-          // 🔹 استفاده از آواتار انتخاب‌شده در Bloc
+
           final photoUrl = state.selectedAvatar ??
               (child.photo != null
                   ? 'http://51.79.53.56:8055/assets/${child.photo}?access_token=1C1ROl_Te_A_sNZNO00O3k32OvRIPcSo'
                   : null);
-
+          widget.onLoaded?.call(child.id);
           return InkWell(
             onTap: () {
               Navigator.push(

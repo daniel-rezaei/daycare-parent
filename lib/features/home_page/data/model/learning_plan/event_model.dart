@@ -22,7 +22,7 @@ class EventModel extends EventEntity {
       status: json['status'] ?? '',
       startAt: DateTime.parse(json['start_at']),
       endAt: DateTime.parse(json['end_at']),
-      allDay: json['all_day'] == false
+      allDay: json['all_day'] ?? false,
     );
   }
 

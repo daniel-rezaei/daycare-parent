@@ -27,10 +27,6 @@ class DioClient {
     }
   }
 
-
-
-
-
   // POST
   Future<Response> post(String path, {dynamic data}) async {
     try {
@@ -55,6 +51,14 @@ class DioClient {
   Future<Response> delete(String path) async {
     try {
       final response = await _dio.delete(path);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+  Future<Response> patch(String path, {dynamic data}) async {
+    try {
+      final response = await _dio.patch(path, data: data);
       return response;
     } catch (e) {
       rethrow;

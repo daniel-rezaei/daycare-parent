@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import '../../../../resorces/pallete.dart';
 
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
-   CustomAppBar({super.key});
+  final Function(String)? onSeasonChanged;
+  const CustomAppBar({super.key, this.onSeasonChanged});
 
   @override
   State<CustomAppBar> createState() => _CustomAppBarState();
@@ -63,7 +64,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
                   setState(() {
                     selectedSeason = value!;
                   });
-
+                  widget.onSeasonChanged?.call(value!);
                 },
               ),
             ),

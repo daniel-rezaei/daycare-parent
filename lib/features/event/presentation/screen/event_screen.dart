@@ -42,7 +42,27 @@ class _EventPageState extends State<EventPage> {
           SafeArea(
             child: Column(
               children: [
-                 CustomAppBar(),
+                CustomAppBar(
+                  onSeasonChanged: (String season) {
+                    setState(() {
+                      switch (season) {
+                        case 'Spr':
+                          selectedSeason = Season.spring;
+                          break;
+                        case 'Sum':
+                          selectedSeason = Season.summer;
+                          break;
+                        case 'Fall':
+                          selectedSeason = Season.fall;
+                          break;
+                        case 'Win':
+                          selectedSeason = Season.winter;
+                          break;
+                      }
+                    });
+                  },
+                ),
+
                 const SizedBox(height: 8),
 
                 SeasonSelector(

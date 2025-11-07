@@ -4,6 +4,10 @@ import 'package:parent_app/features/home_page/presentation/screen/home_screen.da
 import 'package:parent_app/resorces/style.dart';
 
 import 'app_provider.dart';
+import 'features/login/presentation/screen/forget_password.dart';
+import 'features/login/presentation/screen/login_screen.dart';
+import 'features/login/presentation/screen/password_update.dart';
+import 'features/login/presentation/screen/reset_password.dart';
 
 void main() {
   runApp(const MyApp());

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../resorces/pallete.dart';
+import '../../../child_profile/presentation/screen/child_profile.dart';
 import '../bloc/child_bloc.dart';
 import '../bloc/child_state.dart';
 
@@ -67,33 +68,47 @@ class _ProfileAvatarSelectorState extends State<ProfileAvatarSelector> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                width: 112,
-                height: 112,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 1),
-                ),
-                child: ClipOval(
-                  child: avatars[selectedIndex] != null
-                      ? (avatars[selectedIndex]!.startsWith('http')
-                      ? Image.network(
-                    avatars[selectedIndex]!,
-                    fit: BoxFit.cover,
-                    alignment: Alignment.center,
-                  )
-                      : Image.asset(
-                    avatars[selectedIndex]!,
-                    fit: BoxFit.cover,
-                    alignment: Alignment.center,
-                  ))
-                      : Center(
-                    child: Text(
-                      initials,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Palette.txtPrimary,
+              InkWell(onTap: (){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChildProfileWidget(
+                      childId: child.id,
+                      name: '',
+                      dob: child.dob,
+                      photoUrl: photoUrl, // 🔹 ارسال آواتار انتخاب‌شده
+                    ),
+                  ),
+                );
+              },
+                child: Container(
+                  width: 112,
+                  height: 112,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 1),
+                  ),
+                  child: ClipOval(
+                    child: avatars[selectedIndex] != null
+                        ? (avatars[selectedIndex]!.startsWith('http')
+                        ? Image.network(
+                      avatars[selectedIndex]!,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.center,
+                    )
+                        : Image.asset(
+                      avatars[selectedIndex]!,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.center,
+                    ))
+                        : Center(
+                      child: Text(
+                        initials,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Palette.txtPrimary,
+                        ),
                       ),
                     ),
                   ),

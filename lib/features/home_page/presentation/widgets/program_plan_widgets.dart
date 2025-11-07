@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:parent_app/features/home_page/domain/entities/event_entity.dart';
 import 'package:parent_app/features/home_page/presentation/widgets/section_header.dart';
 import 'package:parent_app/features/home_page/presentation/widgets/tag_chip.dart';
 import 'package:parent_app/features/home_page/presentation/widgets/upcoming_event_widget.dart';
 
 import '../../../../core/network/dio_client.dart';
 import '../../../../resorces/pallete.dart';
+import '../../../billing/presentation/screen/billing_page.dart';
 import '../../data/model/biling_item_model.dart';
 import '../../data/repository/learning_plan_repository_impl.dart';
 import '../../domain/usecase/get_learning_plan_usecase.dart';
@@ -251,7 +253,14 @@ class _ProgramPlanCardState extends State<ProgramPlanCard> {
                             const SizedBox(height: 12),
                             SizedBox(
                               height: 165,
-                              child: ListView.builder(
+                              child: meals.isEmpty
+                                  ? Center(
+                                child: Text(
+                                  "No meals available",
+                                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                                ),
+                              )
+                                  : ListView.builder(
                                 itemCount: meals.length,
                                 scrollDirection: Axis.horizontal,
                                 itemBuilder: (context, index) {
@@ -269,6 +278,7 @@ class _ProgramPlanCardState extends State<ProgramPlanCard> {
                               ),
                             ),
                           ],
+
                         );
                       } else if (mealState is MealPlanError) {
                         return Center(child: Text('Error: ${mealState.message}'));
@@ -279,20 +289,29 @@ class _ProgramPlanCardState extends State<ProgramPlanCard> {
                   const SizedBox(height: 16),
 
                   // ----------------- Upcoming Events -----------------
-                  UpcomingEvents(),
+                  UpcomingEventsCardStack(),
                   const SizedBox(height: 12),
 
                   // ----------------- Billing Section -----------------
                   if (billingState is BillingLoaded && billingState.billings.isNotEmpty)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: SectionHeader(title: 'Billing'),
+                          padding: const EdgeInsets.all(8.0),
+                          child: SectionHeader(title: 'Billing',onTap:(){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const BillingPage(),
+                              ),
+                            );
+
+                          }
+                     ,),
                         ),
-                        SizedBox(height: 12),
-                        BillingCard(),
+                        const SizedBox(height: 12),
+                        const BillingCard(),
                       ],
                     ),
                 ],
