@@ -19,7 +19,12 @@ class BalanceCard extends StatelessWidget {
     required this.currency,
   });
 
-  final NumberFormat moneyFormat = NumberFormat.currency(decimalDigits: 2);
+  final NumberFormat moneyFormat = NumberFormat.currency(
+    locale: 'en_US',
+    symbol: '\$',
+    decimalDigits: 2,
+  );
+
 
   @override
   Widget build(BuildContext context) {

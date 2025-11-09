@@ -161,5 +161,5 @@ String formatAge(DateTime? dob) {
     months += 12;
   }
 
-  return '${years}y${months}m';
+  return '${years}y ${months}m';
 }

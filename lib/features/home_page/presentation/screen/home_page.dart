@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:parent_app/features/home_page/presentation/widgets/program_plan_widgets.dart';
+import '../../../login/domain/entity/user_entity.dart';
 import '../bloc/attendance_bloc.dart';
 import '../bloc/attendance_event.dart';
 import '../bloc/billing_bloc.dart';
@@ -25,7 +26,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final UserEntity user; // ✅ اضافه شد
+
+  const HomePage({super.key, required this.user});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -79,9 +82,9 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // 🩵 بخش بالایی (با تصویر پشت)
-                    const Padding(
+                     Padding(
                       padding: EdgeInsets.all(16.0),
-                      child: HeaderWidget(),
+                      child: HeaderWidget(user: widget.user),
                     ),
                     const SizedBox(height: 16),
                     const Center(child: ProfileAvatarSelector()),

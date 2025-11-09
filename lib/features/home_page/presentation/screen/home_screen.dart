@@ -1,24 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../login/domain/entity/user_entity.dart';
 import '../bloc/bottom_nav_bloc.dart';
 import '../bloc/bottom_nav_state.dart';
 import 'bottom_navigation.dart';
 import 'home_page.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final UserEntity user;
 
-  final List<Widget> _pages = const [
-    HomePage(),
-    Center(child: Text("Chat Page")),
-    Center(child: Text("Magic Page")),
-    Center(child: Text("Notifications Page")),
-    Center(child: Text("Gallery Page")),
-  ];
+  const HomeScreen({super.key, required this.user});
+
+
 
   @override
   Widget build(BuildContext context) {
-
+    final List<Widget> pages =  [
+      HomePage(user: user),
+      Center(child: Text("Chat Page")),
+      Center(child: Text("Magic Page")),
+      Center(child: Text("Notifications Page")),
+      Center(child: Text("Gallery Page")),
+    ];
     return BlocBuilder<BottomNavBloc, BottomNavState>(
       builder: (context, state) {
         return SafeArea(
@@ -26,7 +29,7 @@ class HomeScreen extends StatelessWidget {
 
             body: IndexedStack(
               index: state.selectedIndex,
-              children: _pages,
+              children: pages,
             ),
             bottomNavigationBar:  CustomBottomNav(),
           ),

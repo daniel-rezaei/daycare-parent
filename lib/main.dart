@@ -4,29 +4,37 @@ import 'package:parent_app/features/home_page/presentation/screen/home_screen.da
 import 'package:parent_app/resorces/style.dart';
 
 import 'app_provider.dart';
-import 'features/login/presentation/screen/forget_password.dart';
+import 'core/utils/local_storage.dart';
+import 'features/login/data/model/user_model.dart';
 import 'features/login/presentation/screen/login_screen.dart';
-import 'features/login/presentation/screen/password_update.dart';
-import 'features/login/presentation/screen/reset_password.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final UserModel? savedUser = await LocalStorage.getUser();
+
+  runApp(MyApp(savedUser: savedUser));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final UserModel? savedUser;
+
+  const MyApp({super.key, this.savedUser});
 
   @override
   Widget build(BuildContext context) {
+    final user = savedUser; // local variable for promotion
     return MultiBlocProvider(
-      providers: buildAppProviders(), // فقط یک خط
+      providers: buildAppProviders(),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           fontFamily: "Inter",
           textTheme: AppTypography.textTheme,
         ),
-        home: const HomeScreen(),
+        home: user != null
+            ? HomeScreen(user: user) // ✅ non-nullable now
+            : const LoginPage(),
       ),
     );
   }

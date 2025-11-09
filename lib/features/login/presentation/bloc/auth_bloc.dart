@@ -17,10 +17,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     try {
       final user = await loginUseCase(event.email, event.password);
       if (user != null) {
-        emit(LoginSuccess(user.id));
+        emit(LoginSuccess(user));
       } else {
         emit(LoginFailure('User not found'));
       }
+
     } catch (e) {
       emit(LoginFailure(e.toString()));
     }

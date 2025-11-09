@@ -83,4 +83,26 @@ class BillingItemModel {
       background: Colors.white,
     );
   }
+  BillingItemModel copyWith({
+    String? title,
+    String? subtitle,
+    String? icon,
+    String? trailing,
+    Color? background,
+    Color? titleColor,
+    bool? boldTitle,
+    bool? isRichSubtitle,
+  }) {
+    return BillingItemModel(
+      title: title ?? this.title,
+      subtitle: subtitle ?? this.subtitle,
+      icon: icon ?? this.icon,
+      trailing: trailing ?? this.trailing,
+      background: background ?? this.background,
+      titleColor: titleColor ?? this.titleColor,
+      boldTitle: boldTitle ?? this.boldTitle,
+      isRichSubtitle: isRichSubtitle ?? this.isRichSubtitle,
+    );
+  }
+
 }

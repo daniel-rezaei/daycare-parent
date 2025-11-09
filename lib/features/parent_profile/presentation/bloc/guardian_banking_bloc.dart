@@ -1,58 +1,83 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../../domain/usecases/get_guading_bank_usecase.dart';
-import '../../domain/usecases/update_guardian_banking_usecase.dart';
-import 'guardian_baking_state.dart';
+import '../../domain/repository/guardian_repository.dart';
+import '../../domain/entities/guardian_banking.dart';
+import '../../domain/usecases/get_guardian_banking.dart';
+import '../../domain/usecases/get_subsidy_toggle.dart';
 import 'guardian_banking_event.dart';
+import 'guardian_banking_state.dart';
 
-class GuardianBankingBloc extends Bloc<GuardianBankingEvent, GuardianBankingState> {
-  final GetGuardianBankingUseCase getUseCase;
-  final UpdateGuardianConsentUseCase updateConsentUseCase;
+class GuardianDashboardBloc extends Bloc<GuardianDashboardEvent, GuardianDashboardState> {
+  final GetGuardianBanking getBanking;
+  final GetSubsidyToggle getSubsidyToggle;
+  final GuardianRepository repo;
 
-  GuardianBankingBloc({
-    required this.getUseCase,
-    required this.updateConsentUseCase,
-  }) : super(GuardianBankingInitial()) {
-    on<LoadGuardianBankingEvent>(_onLoadGuardianBanking);
-    on<ToggleConsentEvent>(_onToggleConsent);
-    on<UpdateBankFieldsEvent>(_onUpdateBankFields);
+  GuardianDashboardBloc({
+    required this.getBanking,
+    required this.getSubsidyToggle,
+    required this.repo,
+  }) : super(GuardianDashboardInitial()) {
+
+    on<LoadGuardianDashboard>(_onLoadDashboard);
+    on<UpdateConsent>(_onUpdateConsent);
   }
 
-  Future<void> _onLoadGuardianBanking(
-      LoadGuardianBankingEvent event, Emitter<GuardianBankingState> emit) async {
-    emit(GuardianBankingLoading());
+  Future<void> _onLoadDashboard(
+      LoadGuardianDashboard event,
+      Emitter<GuardianDashboardState> emit,
+      ) async {
+    emit(GuardianDashboardLoading());
     try {
-      final data = await getUseCase(event.guardianId);
-      if (data == null) {
-        emit(GuardianBankingError('No banking info found'));
-      } else {
-        emit(GuardianBankingLoaded(data));
+      final banking = await getBanking.call(
+        guardianId: event.guardianId,
+        contactId: event.contactId,
+
+      );
+      final subsidyToggleOn = await getSubsidyToggle.call(event.contactId);
+
+      emit(GuardianDashboardLoaded(
+        banking: banking,
+        subsidyToggleOn: subsidyToggleOn,
+      ));
+    } catch (e) {
+      emit(GuardianDashboardError(e.toString()));
+    }
+  }
+
+  Future<void> _onUpdateConsent(
+      UpdateConsent event,
+      Emitter<GuardianDashboardState> emit,
+      ) async {
+    final currentState = state;
+    if (currentState is GuardianDashboardLoaded) {
+      final banking = currentState.banking;
+
+      if (banking == null) {
+        emit(GuardianDashboardError(
+            "You do not have permission to update banking information."));
+        return;
       }
-    } catch (e) {
-      emit(GuardianBankingError(e.toString()));
-    }
-  }
 
-  Future<void> _onToggleConsent(
-      ToggleConsentEvent event, Emitter<GuardianBankingState> emit) async {
-    try {
-      await updateConsentUseCase(event.recordId, event.consent);
-      emit(GuardianBankingUpdated(true));
-    } catch (e) {
-      emit(GuardianBankingError('Failed to update consent'));
-    }
-  }
+      try {
+        await repo.updateGuardianConsent(
+          guardianId: event.guardianId,
+          consent: event.consentValue,
 
-  Future<void> _onUpdateBankFields(
-      UpdateBankFieldsEvent event, Emitter<GuardianBankingState> emit) async {
-    emit(GuardianBankingLoading());
-    try {
-      // اینجا فرض می‌گیریم متدی در Repository اضافه کردی برای آپدیت شماره حساب
-      // یا از همون updateBankInfo استفاده می‌کنی
-      // برای سادگی فقط موفقیت رو برمی‌گردونیم
-      emit(GuardianBankingUpdated(true));
-    } catch (e) {
-      emit(GuardianBankingError('Failed to update bank info'));
+        );
+
+        final updatedBanking = banking.copyWith(
+          consent: event.consentValue,
+          consentAt: DateTime.now(),
+        );
+
+        emit(GuardianDashboardLoaded(
+          banking: updatedBanking,
+          subsidyToggleOn: currentState.subsidyToggleOn,
+        ));
+      } catch (e) {
+        emit(GuardianDashboardError("Failed to update consent: $e"));
+      }
     }
   }
 }
+
+

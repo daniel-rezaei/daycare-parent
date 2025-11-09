@@ -1,26 +1,23 @@
-// domain/entities/subsidy_account_entity.dart
-class SubsidyAccountEntity {
+class SubsidyAccount {
   final String id;
+  final String childId;
   final String status;
-  final String? providerName;
   final DateTime? startDate;
   final DateTime? endDate;
-  final String? childId;
-  final String? guardianId;
+  final double? amount;
 
-  SubsidyAccountEntity({
+  SubsidyAccount({
     required this.id,
+    required this.childId,
     required this.status,
-    this.providerName,
     this.startDate,
     this.endDate,
-    this.childId,
-    this.guardianId,
+    this.amount,
   });
 
   bool get isActive {
     final now = DateTime.now();
-    if (status.toLowerCase() != 'active') return false;
+    if (status.toLowerCase().trim() != 'active') return false;
     if (startDate != null && startDate!.isAfter(now)) return false;
     if (endDate != null && endDate!.isBefore(now)) return false;
     return true;

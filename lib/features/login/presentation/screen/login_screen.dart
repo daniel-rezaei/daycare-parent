@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:parent_app/resorces/pallete.dart';
+import '../../../../core/utils/local_storage.dart';
 import '../../../home_page/presentation/screen/home_screen.dart';
+import '../../data/model/user_model.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -38,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
     double screenHeight = MediaQuery.of(context).size.height;
 
     return BlocListener<LoginBloc, LoginState>(
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state is LoginFailure) {
           final message = state.error.replaceAll('Exception: ', '');
           ScaffoldMessenger.of(context)
@@ -46,10 +48,11 @@ class _LoginPageState extends State<LoginPage> {
         }
 
         if (state is LoginSuccess) {
+          await LocalStorage.saveUser(state.user as UserModel); // cast لازم است
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (_) => HomeScreen(
-             //   userId: state.userId, // ✅ فقط آیدی
+                  user: state.user
               ),
             ),
           );

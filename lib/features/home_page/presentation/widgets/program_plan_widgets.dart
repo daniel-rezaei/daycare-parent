@@ -48,7 +48,28 @@ class ProgramPlanCard extends StatefulWidget {
 
 class _ProgramPlanCardState extends State<ProgramPlanCard> {
   late final LearningPlanBloc _learningPlanBloc;
-
+// یک Map از Category به مسیر SVG
+  final Map<String, String> descriptionIcons = {
+    'Arts & Crafts': 'assets/images/ic_hand_star.svg',
+    'Music & Movement': 'assets/images/ic_music_movement.svg',
+    'Literacy': 'assets/images/ic_literacy_apple.svg',
+    'Numeracy': 'assets/images/ic_numeracy_apple.svg',
+    'Dramatic Play': 'assets/images/ic_dramatic_play_apple.svg',
+    'Early Math': 'assets/images/ic_subtract.svg',
+    'Sensory Play': 'assets/images/ic_sensory_play_apple.svg',
+    'Science & Discovery': 'assets/images/ic_science.svg',
+    'Language Development': 'assets/images/ic_language.svg',
+    'Outdoor Play': 'assets/images/ic_language_development_apple.svg',
+    'Role Play': 'assets/images/ic_role_play.svg',
+    'Physical Development': 'assets/images/ic_language_development_apple.svg',
+    'Gross Motor Skills': 'assets/images/ic_language_development_apple.svg',
+    'Fine Motor Skills': 'assets/images/ic_fine_motor_skills_activities.svg',
+    'Social Emotional Learning': 'assets/images/ic_social_emotional_learning.svg',
+    'Cultural Awareness': 'assets/images/ic_cultural_awareness.svg',
+    'Health & Nutrition': 'assets/images/ic_health_nutrition.svg',
+    'STEM Activities': 'assets/images/ic_stem_activities.svg',
+    'Nature Environment': 'assets/images/ic_nature.svg',
+  };
   final List<Color> tagColors = [
     Palette.txtTagForeground,
     Palette.txtTagForeground2,
@@ -290,7 +311,7 @@ class _ProgramPlanCardState extends State<ProgramPlanCard> {
 
                   // ----------------- Upcoming Events -----------------
                   UpcomingEventsCardStack(),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
 
                   // ----------------- Billing Section -----------------
                   if (billingState is BillingLoaded && billingState.billings.isNotEmpty)

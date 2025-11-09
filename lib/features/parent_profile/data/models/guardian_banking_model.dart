@@ -1,50 +1,53 @@
-// data/models/guardian_banking_model.dart
-import '../../domain/entities/guardian_banking_entity.dart';
+import '../../domain/entities/guardian_banking.dart';
 
-class GuardianBankingModel extends GuardianBankingEntity {
+class GuardianBankingModel extends GuardianBanking {
   GuardianBankingModel({
-    required super.id,
-    required super.consent,
-    super.guardianId,
-    super.consentAt,
-    super.accountNumber,
-    super.transitNumber,
-    super.institutionNumber,
-    super.accountHolderName,
-    super.bankName,
-  });
+    required String id,
+    required String guardianId,
+    required bool consent,
+    DateTime? consentAt,
+    String? accountHolderName,
+    String? accountType,
+    String? institutionNumber,
+    String? transitNumber,
+    String? accountLast4,
+  }) : super(
+    id: id,
+    guardianId: guardianId,
+    consent: consent,
+    consentAt: consentAt,
+    accountHolderName: accountHolderName,
+    accountType: accountType,
+    institutionNumber: institutionNumber,
+    transitNumber: transitNumber,
+    accountLast4: accountLast4,
+  );
 
   factory GuardianBankingModel.fromJson(Map<String, dynamic> json) {
-    DateTime? parseDate(String? s) {
-      if (s == null) return null;
-      try {
-        return DateTime.parse(s);
-      } catch (_) {
-        return null;
-      }
-    }
-
     return GuardianBankingModel(
-      id: json['id'] ?? '',
-      guardianId: json['guardian_id'],
-      consent: json['consent'] == true,
-      consentAt: parseDate(json['consent_at_']),
-      accountNumber: json['account_number'],
-      transitNumber: json['transit_number'],
-      institutionNumber: json['institution_number'],
-      accountHolderName: json['account_holder_name'],
-      bankName: json['bank_name'],
+      id: json['id'] as String,
+      guardianId: json['guardian_id'] as String? ?? '',
+      consent: (json['consent'] == true),
+      consentAt: json['consent_at_'] != null ? DateTime.parse(json['consent_at_']) : null,
+      accountHolderName: json['account_holder_name'] as String?,
+      accountType: json['account_type'] as String?,
+      institutionNumber: json['institution_number'] as String?,
+      transitNumber: json['transit_number'] as String?,
+      accountLast4: json['account_last4_'] as String?,
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    'guardian_id': guardianId,
-    'consent': consent,
-    'consent_at_': consentAt?.toIso8601String(),
-    'account_number': accountNumber,
-    'transit_number': transitNumber,
-    'institution_number': institutionNumber,
-    'account_holder_name': accountHolderName,
-    'bank_name': bankName,
-  };
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'guardian_id': guardianId,
+      'consent': consent,
+      'consent_at_': consentAt?.toIso8601String(),
+      'account_holder_name': accountHolderName,
+      'account_type': accountType,
+      'institution_number': institutionNumber,
+      'transit_number': transitNumber,
+      'account_last4_': accountLast4,
+    };
+  }
 }

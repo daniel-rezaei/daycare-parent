@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../resorces/pallete.dart';
 
@@ -36,6 +37,19 @@ class _TransactionCardCollapseState extends State<TransactionCardCollapse> {
 
   @override
   Widget build(BuildContext context) {
+    final formatter = NumberFormat.currency(
+      locale: 'en_US',
+      symbol: '\$',
+      decimalDigits: 2,
+    );
+
+// parse safely:
+    double? _parse(String s) => double.tryParse(s.replaceAll(RegExp(r'[^\d.-]'), ''));
+
+    final formattedStatus = formatter.format((_parse(widget.status) ?? 0) / 100);
+    final formattedAmount = formatter.format((_parse(widget.amount) ?? 0) / 100);
+    final formattedBalance = formatter.format((_parse(widget.balance) ?? 0) / 100);
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -93,7 +107,7 @@ class _TransactionCardCollapseState extends State<TransactionCardCollapse> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              widget.status,
+                              formattedStatus,
                               style: TextStyle(
                                 color: widget.statusColor,
                                 fontWeight: FontWeight.w600,
@@ -168,8 +182,8 @@ class _TransactionCardCollapseState extends State<TransactionCardCollapse> {
                     ),
                     label("Type", widget.type),
                     label("Description", widget.description),
-                    badge("Amount", widget.amount, widget.amountColor),
-                    badge("Balance", widget.balance, Colors.grey[800]!),
+                    badge("Amount", formattedAmount, widget.amountColor),
+                    badge("Balance", formattedBalance, Colors.grey[800]!),
                   ],
                 ),
               ),
@@ -228,7 +242,8 @@ class _TransactionCardCollapseState extends State<TransactionCardCollapse> {
                 if (color == Colors.green)
                   SvgPicture.asset('assets/images/ic_amount_billing.svg', height: 16)
                 else
-                  SvgPicture.asset('assets/images/ic_balance.svg', height: 16),
+                  SvgPicture.asset('assets/images/ic_amount_billing.svg', height: 16,
+                    color: title == "Amount" ? Colors.red : Colors.grey.shade600,),
                 SizedBox(width: 4,),
                 Text(value,
                     style: TextStyle(

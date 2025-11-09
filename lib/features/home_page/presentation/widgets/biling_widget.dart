@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:parent_app/resorces/style.dart';
 import '../../../../resorces/pallete.dart';
 import '../../data/model/biling_item_model.dart';
@@ -14,8 +15,12 @@ class BillingCard extends StatelessWidget {
   List<BillingItemModel> buildBillingItems(List<BillingEntity> billings) {
     List<BillingItemModel> items = [];
     final today = DateTime.now();
+    final formatter = NumberFormat.currency(
+      locale: 'en_US',
+      symbol: '\$',
+      decimalDigits: 2,
+    );
 
-    // دسته‌بندی بدهی‌ها
     final pastDue = billings.where((b) {
       final balance = double.tryParse(b.balanceMinor ?? "0") ?? 0;
       return (b.status == 'open' || b.status == 'partial') &&
@@ -31,15 +36,24 @@ class BillingCard extends StatelessWidget {
           (b.dueDate == null || !b.dueDate!.isBefore(today));
     }).toList();
 
-    // طبق Display Rules
+    // تابع کمکی برای ساخت آیتم با عدد فرمت‌شده
+    BillingItemModel mapToItem(BillingEntity b) {
+      final balance = double.tryParse(b.balanceMinor ?? "0") ?? 0;
+      final formattedBalance = formatter.format(balance / 100);
+
+      return BillingItemModel.fromEntity(b).copyWith(
+        trailing: formattedBalance,
+      );
+    }
+
     if (pastDue.isNotEmpty && upcoming.isNotEmpty) {
-      items.addAll(pastDue.map((b) => BillingItemModel.fromEntity(b)));
-      items.addAll(upcoming.map((b) => BillingItemModel.fromEntity(b)));
+      items.addAll(pastDue.map(mapToItem));
+      items.addAll(upcoming.map(mapToItem));
     } else if (pastDue.isNotEmpty) {
-      items.addAll(pastDue.map((b) => BillingItemModel.fromEntity(b)));
+      items.addAll(pastDue.map(mapToItem));
       items.add(BillingItemModel.fromEntity(BillingEntity(status: 'paid')));
     } else if (upcoming.isNotEmpty) {
-      items.addAll(upcoming.map((b) => BillingItemModel.fromEntity(b)));
+      items.addAll(upcoming.map(mapToItem));
       items.add(BillingItemModel.fromEntity(BillingEntity(status: 'paid')));
     } else {
       items.add(BillingItemModel.fromEntity(BillingEntity(status: 'paid')));
@@ -47,6 +61,7 @@ class BillingCard extends StatelessWidget {
 
     return items;
   }
+
 
 
 

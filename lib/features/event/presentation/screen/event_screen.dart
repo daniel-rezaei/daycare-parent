@@ -17,7 +17,23 @@ class EventPage extends StatefulWidget {
 }
 
 class _EventPageState extends State<EventPage> {
-  Season selectedSeason = Season.summer;
+  late Season selectedSeason;
+  @override
+  void initState() {
+    super.initState();
+
+    final month = DateTime.now().month;
+
+    if ([3, 4, 5].contains(month)) {
+      selectedSeason = Season.spring;
+    } else if ([6, 7, 8].contains(month)) {
+      selectedSeason = Season.summer;
+    } else if ([9, 10, 11].contains(month)) {
+      selectedSeason = Season.fall;
+    } else {
+      selectedSeason = Season.winter;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

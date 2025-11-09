@@ -1,6 +1,5 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:parent_app/features/child_profile/data/repository/guardian_repository_impl.dart';
 import 'package:parent_app/features/child_profile/domain/usecase/child_schedule_usecase.dart';
 import 'package:parent_app/features/child_profile/domain/usecase/guardian_usecase.dart';
@@ -17,8 +16,13 @@ import 'package:parent_app/core/network/dio_client.dart';
 
 
 import 'core/constants.dart';
+import 'features/billing/data/repository/billing_card_repository_impl.dart';
 import 'features/billing/data/repository/billing_summery_impl.dart';
 import 'features/billing/domain/usecase/get_billing_summery_usecase.dart';
+import 'features/billing/domain/usecase/get_invoice_usecase.dart';
+import 'features/billing/domain/usecase/get_payment_usecase.dart';
+import 'features/billing/presentation/bloc/billing_card_bloc.dart';
+import 'features/billing/presentation/bloc/billing_card_event.dart';
 import 'features/billing/presentation/bloc/billing_summery_bloc.dart';
 import 'features/billing/presentation/bloc/billing_summery_event.dart';
 import 'features/child_profile/data/repository/child_schedule_repository_impl.dart';
@@ -44,11 +48,9 @@ import 'features/home_page/domain/usecase/get_child_usecase.dart';
 import 'features/home_page/domain/usecase/get_meal_plan_usecase.dart';
 import 'features/home_page/domain/usecase/get_parent_contact_usecase.dart';
 import 'features/home_page/presentation/bloc/attendance_bloc.dart';
-import 'features/home_page/presentation/bloc/attendance_event.dart';
 import 'features/home_page/presentation/bloc/billing_bloc.dart';
 import 'features/home_page/presentation/bloc/child_bloc.dart';
 import 'features/home_page/presentation/bloc/child_event.dart';
-import 'features/home_page/presentation/bloc/learning_plan_event.dart';
 import 'features/home_page/presentation/bloc/meal_plan_bloc.dart';
 import 'features/home_page/presentation/bloc/meal_plan_event.dart';
 import 'features/home_page/presentation/bloc/parent_contact_bloc.dart';
@@ -56,20 +58,16 @@ import 'features/home_page/presentation/bloc/parent_contact_event.dart';
 import 'features/login/data/repository/auth_repository_impl.dart';
 import 'features/login/domain/usecase/login_usecase.dart';
 import 'features/login/presentation/bloc/auth_bloc.dart';
-import 'features/parent_profile/data/repository/guardian_banking_repository_impl.dart';
-import 'features/parent_profile/data/repository/subsidy_account_repository_impl.dart';
-import 'features/parent_profile/domain/usecases/get_guading_bank_usecase.dart';
-import 'features/parent_profile/domain/usecases/get_subsidy_usecase.dart';
-import 'features/parent_profile/domain/usecases/update_guardian_banking_usecase.dart';
+import 'features/parent_profile/data/repository/guardian_banking_repository_impl.dart' as parent_repo;
+import 'features/parent_profile/domain/usecases/get_guardian_banking.dart';
+import 'features/parent_profile/domain/usecases/get_subsidy_toggle.dart';
 import 'features/parent_profile/presentation/bloc/guardian_banking_bloc.dart';
-import 'features/parent_profile/presentation/bloc/guardian_banking_event.dart';
 import 'features/parent_profile/presentation/bloc/parent_profile_bloc.dart';
 import 'features/parent_profile/presentation/bloc/parent_profile_event.dart';
-import 'features/parent_profile/presentation/bloc/subsidy_bloc.dart';
+
 
 List<BlocProvider> buildAppProviders() {
   final dioClient = DioClient();
-
   return [
 
     BlocProvider<LoginBloc>(
@@ -185,23 +183,32 @@ List<BlocProvider> buildAppProviders() {
         LoadParentProfileEvent(parentId: parentContactId),
       ),
     ),
-    BlocProvider<GuardianBankingBloc>(
-      create: (_) => GuardianBankingBloc(
-        getUseCase: GetGuardianBankingUseCase(
-          GuardianBankingRepositoryImpl(dioClient),
-        ),
-        updateConsentUseCase: UpdateGuardianConsentUseCase(
-          GuardianBankingRepositoryImpl(dioClient),
-        ),
-      ),
+
+    BlocProvider<GuardianDashboardBloc>(
+      create: (_) {
+        final bankingRepository = parent_repo.GuardianBankingRepositoryImpl(dioClient);
+        final getBanking = GetGuardianBanking(bankingRepository);
+        final getSubsidy = GetSubsidyToggle(bankingRepository);
+        return GuardianDashboardBloc(
+          getBanking: getBanking,
+          getSubsidyToggle: getSubsidy,
+          repo: bankingRepository, // ✅ حتماً اینو اضافه کن
+        );
+      },
     ),
-    BlocProvider<SubsidyBloc>(
-      create: (_) => SubsidyBloc(
-        GetSubsidyUseCase(
-          SubsidyRepositoryImpl(dioClient),
+
+    BlocProvider<BillingCardBloc>(
+      create: (_) => BillingCardBloc(
+        getInvoicesUseCase: GetInvoicesUseCase(
+          BillingCardRepositoryImpl(dioClient),
         ),
-      ),
+        getPaymentsUseCase: GetPaymentsUseCase(
+          BillingCardRepositoryImpl(dioClient),
+        ),
+      )..add(LoadBillingCardEvent()), // ✅ شروع بارگذاری خودکار
     ),
+
+
     BlocProvider<ChildBloc>(
       create: (_) => ChildBloc(
           GetChildDataUseCase(

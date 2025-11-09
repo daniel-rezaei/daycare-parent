@@ -1,26 +1,26 @@
-abstract class GuardianBankingEvent {}
+abstract class GuardianDashboardEvent {}
 
-class LoadGuardianBankingEvent extends GuardianBankingEvent {
+class LoadGuardianDashboard extends GuardianDashboardEvent {
+  final String contactId;
+  final String? guardianId;
+
+
+  LoadGuardianDashboard({
+    required this.contactId,
+    this.guardianId,
+
+  });
+}
+
+// Event برای تغییر toggle
+class UpdateConsent extends GuardianDashboardEvent {
+  final bool consentValue;
   final String guardianId;
-  LoadGuardianBankingEvent(this.guardianId);
-}
+  final String fullName; // fallback safe
 
-class ToggleConsentEvent extends GuardianBankingEvent {
-  final String recordId;
-  final bool consent;
-  ToggleConsentEvent(this.recordId, this.consent);
-}
-
-class UpdateBankFieldsEvent extends GuardianBankingEvent {
-  final String recordId;
-  final String? accountNumber;
-  final String? transitNumber;
-  final String? institutionNumber;
-
-  UpdateBankFieldsEvent({
-    required this.recordId,
-    this.accountNumber,
-    this.transitNumber,
-    this.institutionNumber,
+  UpdateConsent({
+    required this.consentValue,
+    required this.guardianId,
+    required this.fullName,
   });
 }
