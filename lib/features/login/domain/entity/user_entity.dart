@@ -3,6 +3,7 @@ class UserEntity {
   final String email;
   final String status;
   final String? contactId;
+  final String? guardianId;
   final String firstName;
   final String lastName;
   final String phone;
@@ -15,6 +16,7 @@ class UserEntity {
     required this.email,
     required this.status,
     this.contactId,
+    this.guardianId,
     required this.firstName,
     required this.lastName,
     required this.phone,

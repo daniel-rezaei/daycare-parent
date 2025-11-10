@@ -11,12 +11,14 @@ class BalanceCard extends StatelessWidget {
   final int currentBalance;
   final int pending;
   final String currency;
+  final String guardianId;
 
   BalanceCard({
     super.key,
     required this.currentBalance,
     required this.pending,
     required this.currency,
+    required this.guardianId,
   });
 
   final NumberFormat moneyFormat = NumberFormat.currency(
@@ -127,9 +129,9 @@ class BalanceCard extends StatelessWidget {
                 children:  [
                   Text('Pay Now', style: TextStyle(fontSize: 16,
                       fontWeight: FontWeight.w500,
-                  color: Colors.white)),
+                      color: Colors.white)),
                   SizedBox(width: 8),
-               SvgPicture.asset('assets/images/ic_arrow_right_billing.svg'),
+                  SvgPicture.asset('assets/images/ic_arrow_right_billing.svg'),
                 ],
               ),
             ),
@@ -140,7 +142,7 @@ class BalanceCard extends StatelessWidget {
             children: [
               Expanded(
                 child: TextButton.icon(
-                  onPressed: () =>showStatementBottomSheet(context),
+                  onPressed: () =>showStatementBottomSheet(context,guardianId),
                   icon: SvgPicture.asset('assets/images/ic_statement.svg'),
                   label: const Text('Statement',style: TextStyle(
                       fontSize: 14,fontWeight: FontWeight.w500,
@@ -159,11 +161,11 @@ class BalanceCard extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child:  TextButton.icon(
-                  onPressed: () =>showTaxStatementBottomSheet(context),
+                  onPressed: () =>showTaxStatementBottomSheet(context,guardianId),
                   icon: SvgPicture.asset('assets/images/ic_bill_tax.svg'),
                   label: const Text('Tax Statement',style: TextStyle(
-                    fontSize: 14,fontWeight: FontWeight.w500,
-                    color: Palette.textForeground
+                      fontSize: 14,fontWeight: FontWeight.w500,
+                      color: Palette.textForeground
                   ),),
                   style: OutlinedButton.styleFrom(
                     backgroundColor: Colors.white,

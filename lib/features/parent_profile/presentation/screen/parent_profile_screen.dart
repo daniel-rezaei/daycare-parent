@@ -37,6 +37,7 @@ class _ParentProfileWidgetState extends State<ParentProfileWidget> {
     context.read<GuardianDashboardBloc>().add(
       LoadGuardianDashboard(
         contactId: widget.user.contactId ?? '',
+        guardianId: widget.user.guardianId,
 
       ),
     );

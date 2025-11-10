@@ -17,12 +17,17 @@ import 'package:parent_app/core/network/dio_client.dart';
 
 import 'core/constants.dart';
 import 'features/billing/data/repository/billing_card_repository_impl.dart';
+import 'features/billing/data/repository/billing_doc_repository_impl.dart';
 import 'features/billing/data/repository/billing_summery_impl.dart';
 import 'features/billing/domain/usecase/get_billing_summery_usecase.dart';
 import 'features/billing/domain/usecase/get_invoice_usecase.dart';
+import 'features/billing/domain/usecase/get_latest_statement_usecase.dart';
 import 'features/billing/domain/usecase/get_payment_usecase.dart';
+import 'features/billing/domain/usecase/get_tax_statement_by_year.dart';
+import 'features/billing/domain/usecase/get_tax_statement_years.dart';
 import 'features/billing/presentation/bloc/billing_card_bloc.dart';
 import 'features/billing/presentation/bloc/billing_card_event.dart';
+import 'features/billing/presentation/bloc/billing_doc_bloc.dart';
 import 'features/billing/presentation/bloc/billing_summery_bloc.dart';
 import 'features/billing/presentation/bloc/billing_summery_event.dart';
 import 'features/child_profile/data/repository/child_schedule_repository_impl.dart';
@@ -206,6 +211,14 @@ List<BlocProvider> buildAppProviders() {
           BillingCardRepositoryImpl(dioClient),
         ),
       )..add(LoadBillingCardEvent()), // ✅ شروع بارگذاری خودکار
+    ),
+
+    BlocProvider<BillingDocBloc>(
+      create: (_) => BillingDocBloc(
+        getLatestStatement: GetLatestStatement(BillingDocRepositoryImpl(dioClient: dioClient)),
+        getTaxStatementYears: GetTaxStatementYears(BillingDocRepositoryImpl(dioClient: dioClient)),
+        getTaxStatementByYear: GetTaxStatementByYear(BillingDocRepositoryImpl(dioClient: dioClient)),
+      ),
     ),
 
 

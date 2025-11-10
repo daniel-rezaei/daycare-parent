@@ -6,6 +6,7 @@ class UserModel extends UserEntity {
     required super.email,
     required super.status,
     super.contactId,
+    super.guardianId,
     required super.firstName,
     required super.lastName,
     required super.phone,
@@ -18,6 +19,7 @@ class UserModel extends UserEntity {
   factory UserModel.fromJson(
       Map<String, dynamic> json, [
         Map<String, dynamic>? contactJson,
+        String? guardianId,
       ]) {
     // اولویت بندی برای گرفتن شماره تلفن
     String phone = '';
@@ -36,6 +38,7 @@ class UserModel extends UserEntity {
       email: json['email'] ?? '',
       status: json['status'] ?? '',
       contactId: json['contact_id'] ?? json['contactId'] ?? '',
+      guardianId: guardianId,
       firstName: contactJson?['first_name'] ?? json['first_name'] ?? '',
       lastName: contactJson?['last_name'] ?? json['last_name'] ?? '',
       phone: phone,
@@ -52,6 +55,7 @@ class UserModel extends UserEntity {
       email: json['email'] ?? '',
       status: json['status'] ?? '',
       contactId: json['contactId'] ?? '',
+      guardianId: json['guardianId'] ?? '',
       firstName: json['firstName'] ?? '',
       lastName: json['lastName'] ?? '',
       phone: json['phone'] ?? json['Phone'] ?? '',
@@ -68,6 +72,7 @@ class UserModel extends UserEntity {
       'email': email,
       'status': status,
       'contactId': contactId,
+      'guardianId': guardianId,
       'firstName': firstName,
       'lastName': lastName,
       'phone': phone,

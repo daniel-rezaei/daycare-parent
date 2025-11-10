@@ -27,24 +27,40 @@ class LoginRepositoryImpl implements AuthRepository {
       final contactId = userJson['contact_id'];
       Map<String, dynamic>? contactJson;
 
-      // مرحله ۲: گرفتن اطلاعات Contact از contact_id
+      // مرحله ۲: گرفتن اطلاعات Contact
       if (contactId != null && contactId.toString().isNotEmpty) {
         final contactRes = await dioClient.get('/items/Contacts');
         final contacts = (contactRes.data['data'] as List)
             .map((e) => e as Map<String, dynamic>)
             .toList();
 
-        // پیدا کردن contact مرتبط با user
         contactJson = contacts.firstWhere(
               (c) => c['id'] == contactId,
           orElse: () => {},
         );
       }
 
-      // مرحله ۳: ساخت مدل کامل
-      return UserModel.fromJson(userJson, contactJson);
+      // 👇 مرحله ۳: گرفتن Guardian مربوط به contact_id
+      String? guardianId;
+      if (contactId != null && contactId.toString().isNotEmpty) {
+        final guardianRes = await dioClient.get('/items/Guardian');
+        final guardians = (guardianRes.data['data'] as List)
+            .map((e) => e as Map<String, dynamic>)
+            .toList();
+
+        final guardian = guardians.firstWhere(
+              (g) => g['contact_id'] == contactId,
+          orElse: () => {},
+        );
+
+        guardianId = guardian.isNotEmpty ? guardian['id'] : null;
+      }
+
+      // مرحله ۴: ساخت مدل User با Guardian ID
+      return UserModel.fromJson(userJson, contactJson, guardianId);
     } catch (e) {
       rethrow;
     }
   }
+
 }

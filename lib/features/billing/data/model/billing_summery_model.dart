@@ -7,6 +7,7 @@ class BillingSummaryModel extends BillingSummaryEntity {
     required super.currentBalanceMinor,
     required super.pendingMinor,
     required super.currencyIso,
+    required super.guardianId,
   });
 
   factory BillingSummaryModel.fromJson(Map<String, dynamic> json) {
@@ -14,6 +15,7 @@ class BillingSummaryModel extends BillingSummaryEntity {
       currentBalanceMinor: json['current_balance_minor'] ?? 0,
       pendingMinor: json['pending_minor'] ?? 0,
       currencyIso: json['currency_iso'] ?? '',
+      guardianId: json['guardianId'] ?? '',
     );
   }
 }

@@ -63,6 +63,7 @@ class _BillingPageState extends State<BillingPage> {
                         currentBalance: state.summary.currentBalanceMinor,
                         pending: state.summary.pendingMinor,
                         currency: state.summary.currencyIso,
+                        guardianId:state.summary.guardianId ,
                       ),
                     ),
                     const SizedBox(height: 20),
