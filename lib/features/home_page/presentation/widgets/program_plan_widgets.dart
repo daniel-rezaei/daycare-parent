@@ -50,19 +50,19 @@ class _ProgramPlanCardState extends State<ProgramPlanCard> {
   late final LearningPlanBloc _learningPlanBloc;
 // یک Map از Category به مسیر SVG
   final Map<String, String> descriptionIcons = {
-    'Arts & Crafts': 'assets/images/ic_hand_star.svg',
+    'Arts & Crafts': 'assets/images/ic_art_craft.svg',
     'Music & Movement': 'assets/images/ic_music_movement.svg',
-    'Literacy': 'assets/images/ic_literacy_apple.svg',
-    'Numeracy': 'assets/images/ic_numeracy_apple.svg',
-    'Dramatic Play': 'assets/images/ic_dramatic_play_apple.svg',
+    'Literacy': 'assets/images/ic_language.svg',
+    'Numeracy': 'assets/images/ic_subtract.svg',
+    'Dramatic Play': 'assets/images/ic_role_play.svg',
     'Early Math': 'assets/images/ic_subtract.svg',
-    'Sensory Play': 'assets/images/ic_sensory_play_apple.svg',
+    'Sensory Play': 'assets/images/ic_sensory_play.svg',
     'Science & Discovery': 'assets/images/ic_science.svg',
     'Language Development': 'assets/images/ic_language.svg',
-    'Outdoor Play': 'assets/images/ic_language_development_apple.svg',
+    'Outdoor Play': 'assets/images/ic_out_door_play.svg',
     'Role Play': 'assets/images/ic_role_play.svg',
-    'Physical Development': 'assets/images/ic_language_development_apple.svg',
-    'Gross Motor Skills': 'assets/images/ic_language_development_apple.svg',
+    'Physical Development': 'assets/images/ic_gross_motor.svg',
+    'Gross Motor Skills': 'assets/images/ic_gross_motor.svg',
     'Fine Motor Skills': 'assets/images/ic_fine_motor_skills_activities.svg',
     'Social Emotional Learning': 'assets/images/ic_social_emotional_learning.svg',
     'Cultural Awareness': 'assets/images/ic_cultural_awareness.svg',
@@ -216,7 +216,9 @@ class _ProgramPlanCardState extends State<ProgramPlanCard> {
                                       children: [
                                         Row(
                                           children: [
-                                            SvgPicture.asset('assets/images/ic_plan.svg'),
+                                            SvgPicture.asset(height: 16,width: 16,
+                                              descriptionIcons[mainLabel] ?? 'assets/images/ic_plan.svg',
+                                            ),
                                             const SizedBox(width: 6),
                                             Expanded(
                                               child: Text(

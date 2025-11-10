@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../login/domain/entity/user_entity.dart';
 import '../../../resource_home/parent/resource_screen.dart';
-import '../../../resource_home/shared_media/presentation/shared_media_screen.dart';
 import '../bloc/bottom_nav_bloc.dart';
 import '../bloc/bottom_nav_state.dart';
 import 'bottom_navigation.dart';

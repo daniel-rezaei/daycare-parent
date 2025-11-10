@@ -141,7 +141,7 @@ class _UpcomingEventsCardStackState extends State<UpcomingEventsCardStack> {
                       // کارت بزرگ
                       Positioned(
                         left: totalSmallCardsWidth,
-                        right: 4,
+                        right: 1,
                         child: AnimatedSwitcher(
                           duration: const Duration(milliseconds: 400),
                           transitionBuilder: (child, animation) => FadeTransition(

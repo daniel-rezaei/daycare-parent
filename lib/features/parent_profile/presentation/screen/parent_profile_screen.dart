@@ -45,7 +45,7 @@ class _ParentProfileWidgetState extends State<ParentProfileWidget> {
 
   String _maskAccount(String? account) {
     if (account == null || account.length < 4) return account ?? '';
-    return '•••• •••• ${account.substring(account.length - 4)}';
+    return ' ${account.substring(account.length - 4)}';
   }
 
   @override
