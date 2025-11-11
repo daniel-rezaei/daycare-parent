@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/utils/phone_utils.dart';
 import '../../../../resorces/pallete.dart';
 import '../bloc/child_schedule_event.dart';
 import '../bloc/health_bloc.dart';
@@ -271,7 +272,7 @@ class _ChildProfileWidgetState extends State<ChildProfileWidget> {
                                           child: ContactCard(
                                             name: "${g.firstName ?? ''} ${g.lastName ?? ''}",
                                             role: g.relation,
-                                            phone: g.phone ?? '-',
+                                            phone: PhoneUtils.formatPhoneNumber(g.phone),
                                             photo: g.photo,
                                             color: g.relation.toLowerCase() == 'mother'
                                                 ? Palette.borderPrimary20

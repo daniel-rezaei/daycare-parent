@@ -47,5 +47,6 @@ class Palette {
   static const Color bgColorDivider = Color(0xffDDDDDF);
   static const Color bgColorInfo = Color(0xffF7F2FF);
   static const Color bgColorBilling = Color(0xffF7F3FF);
+  static const Color bgColorPink = Color(0xffFEF1F8);
 
 }

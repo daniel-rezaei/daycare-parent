@@ -11,7 +11,6 @@ import '../bloc/child_state.dart';
 import '../bloc/event_bloc.dart';
 import '../bloc/event_state.dart';
 import '../bloc/learning_plan_bloc.dart';
-import '../bloc/learning_plan_event.dart';
 import '../bloc/learning_plan_state.dart';
 import '../bloc/meal_plan_bloc.dart';
 import '../bloc/meal_plan_state.dart';
@@ -81,7 +80,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 🩵 بخش بالایی (با تصویر پشت)
+
                      Padding(
                       padding: EdgeInsets.all(16.0),
                       child: HeaderWidget(user: widget.user),

@@ -1,7 +1,7 @@
 
 class BillingSummaryEntity {
-  final int currentBalanceMinor;
-  final int pendingMinor;
+  final String currentBalanceMinor;
+  final String pendingMinor;
   final String currencyIso;
   final String guardianId;
 

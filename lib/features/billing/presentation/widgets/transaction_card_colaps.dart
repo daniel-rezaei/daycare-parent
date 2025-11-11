@@ -46,9 +46,9 @@ class _TransactionCardCollapseState extends State<TransactionCardCollapse> {
 // parse safely:
     double? _parse(String s) => double.tryParse(s.replaceAll(RegExp(r'[^\d.-]'), ''));
 
-    final formattedStatus = formatter.format((_parse(widget.status) ?? 0) / 100);
-    final formattedAmount = formatter.format((_parse(widget.amount) ?? 0) / 100);
-    final formattedBalance = formatter.format((_parse(widget.balance) ?? 0) / 100);
+    final formattedStatus = widget.status.contains("\$") ? widget.status : "\$${widget.status}";
+   // final formattedAmount = formatter.format((_parse(widget.amount) ?? 0) / 100);
+  //  final formattedBalance = formatter.format((_parse(widget.balance) ?? 0) / 100);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
@@ -182,8 +182,8 @@ class _TransactionCardCollapseState extends State<TransactionCardCollapse> {
                     ),
                     label("Type", widget.type),
                     label("Description", widget.description),
-                    badge("Amount", formattedAmount, widget.amountColor),
-                    badge("Balance", formattedBalance, Colors.grey[800]!),
+                    badge("Amount", widget.amount.contains("\$") ? widget.amount : "\$${widget.amount}", widget.amountColor),
+                    badge("Balance", widget.balance.contains("\$") ? widget.balance : "\$${widget.balance}", Colors.grey[800]!),
                   ],
                 ),
               ),

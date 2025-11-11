@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:parent_app/features/resource_home/shared_media/presentation/widgets/media_grid_item.dart';
+import 'package:parent_app/features/resource_home/shared_media/presentation/widgets/show_art_bottom_sheet.dart';
 import 'package:parent_app/features/resource_home/shared_media/presentation/widgets/show_bottomsheet_sort_gallery.dart';
 import 'package:parent_app/features/resource_home/shared_media/presentation/widgets/show_filter_bottom_sheet.dart';
 import 'package:parent_app/resorces/pallete.dart';
@@ -189,9 +190,21 @@ class _SharedScreenState extends State<SharedScreen> {
                                     ),
                                     itemCount: entry.value.length,
                                     itemBuilder: (context, index) {
-                                      return MediaGridItem(item: entry.value[index]);
+                                      final media = entry.value[index];
+                                      return GestureDetector(
+                                        onTap: () {
+                                          showModalBottomSheet(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            backgroundColor: Colors.transparent,
+                                            builder: (context) => const ArtBottomSheet(),
+                                          );
+                                        },
+                                        child: MediaGridItem(item: media),
+                                      );
                                     },
                                   ),
+
                                   const SizedBox(height: 16),
                                 ],
                               );

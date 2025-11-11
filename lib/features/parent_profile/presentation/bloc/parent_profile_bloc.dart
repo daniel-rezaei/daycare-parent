@@ -23,7 +23,7 @@ class ParentProfileBloc extends Bloc<ParentProfileEvent, ParentProfileState> {
       );
 
       if (result == null) {
-        emit(ParentProfileError("Parent not found"));
+        emit(ParentProfileError(""));
         return;
       }
 

@@ -38,13 +38,15 @@ class BillingCard extends StatelessWidget {
 
     // تابع کمکی برای ساخت آیتم با عدد فرمت‌شده
     BillingItemModel mapToItem(BillingEntity b) {
-      final balance = double.tryParse(b.balanceMinor ?? "0") ?? 0;
-      final formattedBalance = formatter.format(balance / 100);
+      final balance = b.balanceMinor ?? "0";
+      // فقط اضافه کردن $ اگر خودش شامل $ نبود
+      final displayBalance = balance.contains("\$") ? balance : "\$$balance";
 
       return BillingItemModel.fromEntity(b).copyWith(
-        trailing: formattedBalance,
+        trailing: displayBalance,
       );
     }
+
 
     if (pastDue.isNotEmpty && upcoming.isNotEmpty) {
       items.addAll(pastDue.map(mapToItem));

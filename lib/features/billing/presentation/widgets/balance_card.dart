@@ -8,8 +8,8 @@ import 'package:parent_app/features/billing/presentation/widgets/show_tax_statem
 import '../../../../resorces/pallete.dart';
 
 class BalanceCard extends StatelessWidget {
-  final int currentBalance;
-  final int pending;
+  final String currentBalance;
+  final String pending;
   final String currency;
   final String guardianId;
 
@@ -30,8 +30,8 @@ class BalanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final balanceFormatted = moneyFormat.format(currentBalance / 100);
-    final pendingFormatted = moneyFormat.format(pending / 100);
+  //  final balanceFormatted = moneyFormat.format(currentBalance / 100);
+   // final pendingFormatted = moneyFormat.format(pending / 100);
 
     return Container(
       decoration: BoxDecoration(
@@ -71,7 +71,7 @@ class BalanceCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "$balanceFormatted ",
+                          "\$$currentBalance",
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
@@ -92,7 +92,7 @@ class BalanceCard extends StatelessWidget {
                               SvgPicture.asset('assets/images/ic_pending.svg'),
                               const SizedBox(width: 6),
                               Text(
-                                "Pending $pendingFormatted",
+                                "Pending \$$pending",
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: Palette.textMutedForeground,

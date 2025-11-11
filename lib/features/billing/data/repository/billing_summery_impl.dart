@@ -150,6 +150,24 @@ import '../../domain/entity/billing_summery_entity.dart';
 import '../../domain/repository/billing_summery_repository.dart';
 import '../model/billing_summery_model.dart';
 
+import 'dart:convert';
+import 'package:dio/dio.dart';
+import 'package:parent_app/core/network/dio_client.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../domain/entity/billing_summery_entity.dart';
+import '../../domain/repository/billing_summery_repository.dart';
+import '../model/billing_summery_model.dart';
+
+import 'dart:convert';
+import 'package:dio/dio.dart';
+import 'package:parent_app/core/network/dio_client.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../domain/entity/billing_summery_entity.dart';
+import '../../domain/repository/billing_summery_repository.dart';
+import '../model/billing_summery_model.dart';
+
 class BillingSummeryRepositoryImpl extends BillingSummeryRepository {
   final DioClient dio;
 
@@ -163,9 +181,7 @@ class BillingSummeryRepositoryImpl extends BillingSummeryRepository {
       // 1️⃣ Get billing account
       final baRes = await dio.get(
         '/items/billing_account_guardian',
-        queryParameters: {
-          "filter[guardian_id][_eq]": guardianId,
-        },
+        queryParameters: {"filter[guardian_id][_eq]": guardianId},
       );
 
       final baData = baRes.data["data"];
@@ -180,17 +196,18 @@ class BillingSummeryRepositoryImpl extends BillingSummeryRepository {
         '/items/Invoice',
         queryParameters: {
           "filter[billing_account_id][_eq]": billingAccountId,
-          "filter[status][_in]": ["open", "partial", "past due"], // ✅ آرایه
+          "filter[status][_in]": ["open", "partial", "past due"],
         },
       );
 
       final invoices = invRes.data["data"] as List;
-      int currentBalance = 0;
+      String currentBalance = "0";
       String currency = "USD";
 
-      for (var inv in invoices) {
-        currentBalance += double.parse(inv["balance_minor"].toString()).round();
-        currency = inv["currency_iso"] ?? currency;
+      if (invoices.isNotEmpty) {
+        // دقیقاً همان مقداری که سرور داده
+        currentBalance = invoices.last["balance_minor"].toString();
+        currency = invoices.last["currency_iso"] ?? currency;
       }
 
       // 3️⃣ Pending Payments
@@ -203,31 +220,27 @@ class BillingSummeryRepositoryImpl extends BillingSummeryRepository {
       );
 
       final payments = payRes.data["data"] as List;
-      int pendingPayments = 0;
-      for (var p in payments) {
-        pendingPayments += double.parse(p["amount_minor"].toString()).round();
-      }
+      // همه مقادیر pending را مستقیم نگه می‌داریم به صورت رشته
+      List<String> pendingAmounts = payments.map((p) => p["amount_minor"].toString()).toList();
 
       // 4️⃣ Pending Charges
       final pcRes = await dio.get(
         '/items/Pending_Charges',
         queryParameters: {
           "filter[billing_account_id][_eq]": billingAccountId,
-          "filter[status][_in]": ["pending", "scheduled"], // ✅ آرایه
+          "filter[status][_in]": ["pending", "scheduled"],
         },
       );
 
       final charges = pcRes.data["data"] as List;
-      int pendingCharges = 0;
-      for (var c in charges) {
-        pendingCharges += double.parse(c["amount_minor"].toString()).round();
-      }
+      pendingAmounts.addAll(charges.map((c) => c["amount_minor"].toString()));
 
-      final totalPending = pendingPayments + pendingCharges;
+      // اگر بخوای همه pending ها را یکجا نمایش بدی:
+      final pending = pendingAmounts.isNotEmpty ? pendingAmounts.join(", ") : "0";
 
       return BillingSummaryModel(
-        currentBalanceMinor: currentBalance,
-        pendingMinor: totalPending,
+        currentBalanceMinor: currentBalance, // رشته مستقیم سرور
+        pendingMinor: pending,              // رشته مستقیم سرور
         currencyIso: currency,
         guardianId: guardianId,
       );
@@ -236,7 +249,7 @@ class BillingSummeryRepositoryImpl extends BillingSummeryRepository {
     }
   }
 
-  /// TODO: replace with real token/secure storage user lookup
+  /// دریافت guardianId از SharedPreferences و API
   Future<String> _getLoggedInGuardianId() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -277,3 +290,5 @@ class BillingSummeryRepositoryImpl extends BillingSummeryRepository {
     }
   }
 }
+
+

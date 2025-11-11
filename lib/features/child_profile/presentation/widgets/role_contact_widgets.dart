@@ -73,9 +73,16 @@ class ContactCard extends StatelessWidget {
                 children: [
                   SvgPicture.asset('assets/images/ic_call.svg'),
                   const SizedBox(width: 6),
-                  Text(phone, style: const TextStyle(fontSize: 12)),
+                  Expanded(
+                    child: Text(
+                      phone,
+                      style: const TextStyle(fontSize: 12),
+                      overflow: TextOverflow.ellipsis, // اگه طولانی بود، سه‌نقطه بزنه
+                    ),
+                  ),
                 ],
               ),
+
             ),
           ),
         ],

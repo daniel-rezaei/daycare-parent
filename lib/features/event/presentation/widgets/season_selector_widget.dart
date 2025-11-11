@@ -5,12 +5,15 @@ enum Season { spring, summer, fall, winter }
 
 class SeasonSelector extends StatefulWidget {
   final Season selected;
+
   final Function(Season) onSelect;
+  final String selectedYear; // 👈 سال از AppBar میاد
 
   const SeasonSelector({
     super.key,
     required this.selected,
     required this.onSelect,
+    required this.selectedYear,
   });
 
   @override
@@ -23,13 +26,11 @@ class _SeasonSelectorState extends State<SeasonSelector> {
   @override
   void initState() {
     super.initState();
-
-
     _order = List<Season>.from(Season.values);
 
     // قرار دادن فصل انتخاب‌شده وسط لیست
     final idx = _order.indexOf(widget.selected);
-    if (idx != 1) { // وسط لیست index 1
+    if (idx != 1) {
       final newOrder = List<Season>.from(_order);
       final selected = newOrder.removeAt(idx);
       newOrder.insert(1, selected);
@@ -37,17 +38,13 @@ class _SeasonSelectorState extends State<SeasonSelector> {
     }
   }
 
-
   void _onTap(Season season) {
     widget.onSelect(season);
-
     setState(() {
-      // قرار دادن آیتم انتخاب‌شده وسط لیست
       final idx = _order.indexOf(season);
       if (idx != 1) {
         final newOrder = List<Season>.from(_order);
         newOrder.remove(season);
-        // قرار دادن در ایندکس 1 (وسط) برای 4 آیتم
         newOrder.insert(1, season);
         _order = newOrder;
       }
@@ -64,7 +61,7 @@ class _SeasonSelectorState extends State<SeasonSelector> {
       scrollDirection: Axis.horizontal,
       physics: const BouncingScrollPhysics(),
       child: Row(
-        mainAxisSize: MainAxisSize.min, // مهم برای جلوگیری از overflow
+        mainAxisSize: MainAxisSize.min,
         children: _order.map((season) {
           final isSelected = widget.selected == season;
           final label = _getLabel(season);
@@ -92,16 +89,16 @@ class _SeasonSelectorState extends State<SeasonSelector> {
                 child: Text.rich(
                   TextSpan(
                     children: [
-                      TextSpan(
-                        text: label.split(' ')[0],
-                      ),
+                      TextSpan(text: label.split(' ')[0]),
                       TextSpan(
                         text: ' ${label.split(' ')[1]}',
                         style: isSelected
                             ? textStyleActive.copyWith(
-                            fontSize: 18, color: Palette.textSecondaryForeground80)
+                            fontSize: 18,
+                            color: Palette.textSecondaryForeground80)
                             : textStyleInactive.copyWith(
-                            color: Palette.textSecondaryForeground80, fontSize: 14),
+                            color: Palette.textSecondaryForeground80,
+                            fontSize: 14),
                       ),
                     ],
                   ),
@@ -115,15 +112,16 @@ class _SeasonSelectorState extends State<SeasonSelector> {
   }
 
   String _getLabel(Season season) {
+    final year = widget.selectedYear.isNotEmpty ? widget.selectedYear : '----';
     switch (season) {
       case Season.spring:
-        return 'Spr 2025';
+        return 'Spr $year';
       case Season.summer:
-        return 'Sum 2025';
+        return 'Sum $year';
       case Season.fall:
-        return 'Fall 2025';
+        return 'Fall $year';
       case Season.winter:
-        return 'Win 2025';
+        return 'Win $year';
     }
   }
 }

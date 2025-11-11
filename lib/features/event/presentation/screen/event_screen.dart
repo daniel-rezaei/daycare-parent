@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:parent_app/features/home_page/domain/entities/event_entity.dart';
@@ -7,7 +6,6 @@ import '../../../home_page/presentation/bloc/event_state.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/event_card_widget.dart';
 import '../widgets/season_selector_widget.dart';
-
 
 class EventPage extends StatefulWidget {
   const EventPage({super.key});
@@ -18,6 +16,8 @@ class EventPage extends StatefulWidget {
 
 class _EventPageState extends State<EventPage> {
   late Season selectedSeason;
+  String selectedYear = DateTime.now().year.toString();
+
   @override
   void initState() {
     super.initState();
@@ -41,54 +41,39 @@ class _EventPageState extends State<EventPage> {
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          // تصویر پس‌زمینه
+          // پس‌زمینه
           Positioned.fill(
             child: Image.asset(
               'assets/images/back_gry.png',
               fit: BoxFit.cover,
             ),
           ),
-
           Positioned.fill(
-            child: Container(
-              color: Colors.black.withOpacity(0.05),
-            ),
+            child: Container(color: Colors.black.withOpacity(0.05)),
           ),
-
           SafeArea(
             child: Column(
               children: [
+                // Custom AppBar با انتخاب سال
                 CustomAppBar(
-                  onSeasonChanged: (String season) {
+                  onSeasonChanged: (String year) {
                     setState(() {
-                      switch (season) {
-                        case 'Spr':
-                          selectedSeason = Season.spring;
-                          break;
-                        case 'Sum':
-                          selectedSeason = Season.summer;
-                          break;
-                        case 'Fall':
-                          selectedSeason = Season.fall;
-                          break;
-                        case 'Win':
-                          selectedSeason = Season.winter;
-                          break;
-                      }
+                      selectedYear = year;
                     });
                   },
                 ),
 
                 const SizedBox(height: 8),
 
+                // انتخاب فصل
                 SeasonSelector(
                   selected: selectedSeason,
-                  onSelect: (season) => setState(() => selectedSeason = season),
+                  onSelect: (season) => setState(() => selectedSeason = season), selectedYear: selectedYear,
                 ),
 
                 const SizedBox(height: 12),
 
-                // لیست EventCardها داخل کانتینر سفید
+                // لیست EventCardها داخل Container سفید
                 Expanded(
                   child: BlocBuilder<EventBloc, EventState>(
                     builder: (context, state) {
@@ -97,9 +82,19 @@ class _EventPageState extends State<EventPage> {
                       } else if (state is EventError) {
                         return Center(child: Text('Error: ${state.message}'));
                       } else if (state is EventLoaded) {
-                        final events = _filterBySeason(state.events, selectedSeason);
+                        // فیلتر بر اساس فصل و سال
+                        final filteredEvents = _filterBySeasonAndYear(
+                          state.events,
+                          selectedSeason,
+                          selectedYear,
+                        );
 
-                        if (events.isEmpty) {
+                        // مرتب‌سازی بر اساس تاریخ
+                        final sortedEvents = List<EventEntity>.from(filteredEvents)
+                          ..sort((a, b) => (a.startAt ?? DateTime.now())
+                              .compareTo(b.startAt ?? DateTime.now()));
+
+                        if (sortedEvents.isEmpty) {
                           return Container(
                             decoration: const BoxDecoration(
                               color: Colors.white,
@@ -141,9 +136,10 @@ class _EventPageState extends State<EventPage> {
                           ),
                           child: ListView.separated(
                             padding: const EdgeInsets.all(16),
-                            itemCount: events.length,
+                            itemCount: sortedEvents.length,
                             separatorBuilder: (_, __) => const SizedBox(height: 12),
-                            itemBuilder: (context, i) => EventCard(model: events[i]),
+                            itemBuilder: (context, i) =>
+                                EventCard(model: sortedEvents[i]),
                           ),
                         );
                       }
@@ -160,21 +156,34 @@ class _EventPageState extends State<EventPage> {
     );
   }
 
-  List<EventEntity> _filterBySeason(List<EventEntity> events, Season s) {
+  List<EventEntity> _filterBySeasonAndYear(
+      List<EventEntity> events, Season season, String year) {
     return events.where((e) {
-      final m = e.startAt?.month;
-      switch (s) {
+      final start = e.startAt;
+      if (start == null) return false;
+
+      // فیلتر فصل
+      final month = start.month;
+      bool seasonMatch = false;
+      switch (season) {
         case Season.spring:
-          return [3, 4, 5].contains(m);
+          seasonMatch = [3, 4, 5].contains(month);
+          break;
         case Season.summer:
-          return [6, 7, 8].contains(m);
+          seasonMatch = [6, 7, 8].contains(month);
+          break;
         case Season.fall:
-          return [9, 10, 11].contains(m);
+          seasonMatch = [9, 10, 11].contains(month);
+          break;
         case Season.winter:
-          return [12, 1, 2].contains(m);
+          seasonMatch = [12, 1, 2].contains(month);
+          break;
       }
+
+      // فیلتر سال
+      final yearMatch = start.year.toString() == year;
+
+      return seasonMatch && yearMatch;
     }).toList();
   }
 }
-
-

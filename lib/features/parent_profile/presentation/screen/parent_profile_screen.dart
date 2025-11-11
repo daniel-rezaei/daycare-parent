@@ -1,22 +1,25 @@
-// lib/features/parent_profile/presentation/pages/parent_profile_widget.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/utils/phone_utils.dart';
 import '../../../../resorces/pallete.dart';
 import '../../../login/domain/entity/user_entity.dart';
+import '../../../login/presentation/screen/login_screen.dart';
+import '../bloc/parent_profile_bloc.dart';
+import '../bloc/parent_profile_event.dart';
+import '../bloc/parent_profile_state.dart';
+import '../widgets/info_card.dart';
+import '../widgets/info_card_email.dart';
+import '../widgets/bank_info.dart';
 import '../bloc/guardian_banking_bloc.dart';
 import '../bloc/guardian_banking_event.dart';
 import '../bloc/guardian_banking_state.dart';
-import '../bloc/parent_profile_bloc.dart';
-import '../bloc/parent_profile_event.dart';
-import '../widgets/bank_info.dart';
-import '../widgets/info_card.dart';
-import '../widgets/info_card_email.dart';
 
 class ParentProfileWidget extends StatefulWidget {
   final UserEntity user;
-
   const ParentProfileWidget({super.key, required this.user});
 
   @override
@@ -27,292 +30,318 @@ class _ParentProfileWidgetState extends State<ParentProfileWidget> {
   @override
   void initState() {
     super.initState();
-    final fullName = "${widget.user.firstName} ${widget.user.lastName}".trim();
-    // Load parent profile
-    context.read<ParentProfileBloc>().add(
-      LoadParentProfileEvent(parentId: widget.user.contactId ?? ''),
-    );
+    // بارگذاری داده‌ها بعد از اولین فریم
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ParentProfileBloc>().add(
+        LoadParentProfileEvent(parentId: widget.user.id),
+      );
 
-    // Load guardian dashboard
-    context.read<GuardianDashboardBloc>().add(
-      LoadGuardianDashboard(
-        contactId: widget.user.contactId ?? '',
-        guardianId: widget.user.guardianId,
+      context.read<GuardianDashboardBloc>().add(
+        LoadGuardianDashboard(
+          contactId: widget.user.contactId ?? '',
+          guardianId: widget.user.guardianId,
+        ),
+      );
+    });
 
-      ),
+  }
+
+  Future<void> signOut(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginPage()),
+          (route) => false,
     );
   }
 
+
   String _maskAccount(String? account) {
     if (account == null || account.length < 4) return account ?? '';
-    return ' ${account.substring(account.length - 4)}';
+    return '*** ${account.substring(account.length - 4)}';
   }
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final name = "${widget.user.firstName} ${widget.user.lastName}".trim();
-    final email = widget.user.email;
-    final phone = widget.user.phone.isNotEmpty ? widget.user.phone : "-";
-    final photo = widget.user.photo;
-    final address = widget.user.address ?? "-";
-    final postal = widget.user.postalCode ?? "-";
 
-    return Stack(
-      children: [
-        // Gradient background
-        Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFFE9DFFF), Color(0xFFF3EFFF)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
         ),
-        Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: const Text(
-              'Parent Profile',
-              style: TextStyle(color: Colors.black),
+        title: const Text('Parent Profile', style: TextStyle(color: Colors.black)),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12.0),
+            child: IconButton(
+              icon: const Icon(Icons.logout, color: Colors.black),
+              tooltip: "Sign Out",
+              onPressed: () => signOut(context),
             ),
           ),
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // HEADER
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Row(
+        ],
+      ),
+      body: Stack(
+        children: [
+
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFE9DFFF), Color(0xFFF3EFFF)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+
+          BlocBuilder<ParentProfileBloc, ParentProfileState>(
+            builder: (context, state) {
+              // 🔹 حالت بارگذاری یا اولیه
+              if (state is ParentProfileLoading || state is ParentProfileInitial) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              else if (state is ParentProfileError) {
+                return Center(child: Text(state.message));
+              }
+
+              else if (state is ParentProfileLoaded) {
+                final parent = state.parent;
+                final name = parent.fullName;
+                final email = parent.email ?? "-";
+                final phone = parent.phone ?? "-";
+                final address = parent.street ?? "-";
+                final postal = parent.postalCode ?? "-";
+                final photo = parent.photo ?? "";
+
+                return SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundImage: (photo.isNotEmpty)
-                              ? NetworkImage(
-                              'http://51.79.53.56:8055/assets/$photo?access_token=1C1ROl_Te_A_sNZNO00O3k32OvRIPcSo')
-                              : const AssetImage(
-                            'assets/images/avatar1.png',
-                          ) as ImageProvider,
-                        ),
-                        const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        SizedBox(height: kToolbarHeight + 40),
+
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Text(
-                              name.isNotEmpty ? name : email,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            CircleAvatar(
+                              radius: 40,
+                              backgroundImage: (photo.isNotEmpty)
+                                  ? NetworkImage(
+                                  'http://51.79.53.56:8055/assets/$photo?access_token=1C1ROl_Te_A_sNZNO00O3k32OvRIPcSo')
+                                  : const AssetImage('assets/images/avatar1.png')
+                              as ImageProvider,
                             ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                border: Border.all(
-                                    color: Palette.bgBorder, width: 1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  SvgPicture.asset(
-                                      'assets/images/ic_call.svg'),
-                                  const SizedBox(width: 4),
-                                  Text(phone),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // BODY
-                  Container(
-                    height: screenHeight * 4 / 5,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(24),
-                        topRight: Radius.circular(24),
-                      ),
-                    ),
-                    child: BlocBuilder<GuardianDashboardBloc, GuardianDashboardState>(
-                      builder: (context, state) {
-                        if (state is GuardianDashboardLoading) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        } else if (state is GuardianDashboardLoaded) {
-                          final bank = state.banking;
-                          final hasSubsidy = state.subsidyToggleOn;
-
-                          return SingleChildScrollView(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Address + Postal
-                                Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: InfoCard(
-                                          icon:
-                                          'assets/images/ic_address_parent.svg',
-                                          title: 'Address',
-                                          subtitle: address,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: InfoCard(
-                                          icon:
-                                          'assets/images/ic_postal_code.svg',
-                                          title: 'Postal Code',
-                                          subtitle: postal,
-                                        ),
-                                      ),
-                                    ],
+                                  Text(
+                                    name.isNotEmpty ? name : email,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
-
-                                // Email
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16.0),
-                                  child: InfoCardEmail(
-                                    icon:
-                                    'assets/images/ic_email_parent.svg',
-                                    title: 'Email',
-                                    subtitle: email,
-                                    fullWidth: true,
-                                  ),
-                                ),
-
-                                const SizedBox(height: 24),
-
-                                // Pre-Authorization toggle
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16.0, vertical: 8),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text('Pre-Authorization Consent'),
-                                      Transform.scale(
-                                        scale: 0.85,
-                                        child:Switch(
-                                          activeColor: Palette.borderPrimary,
-                                          value: bank?.consent ?? false,
-                                          onChanged: (v) {
-                                            final banking = context.read<GuardianDashboardBloc>().state;
-                                            if (banking is GuardianDashboardLoaded && banking.banking != null) {
-                                              context.read<GuardianDashboardBloc>().add(
-                                                UpdateConsent(
-                                                  consentValue: v,
-                                                  fullName: "${widget.user.firstName} ${widget.user.lastName}",
-                                                  guardianId: banking.banking!.guardianId,
-                                                ),
-                                              );
-                                            }
-                                          },
-
-                                        ),
-
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                // Bank fields container (enabled only if consent == true)
-                                if (bank?.consent == true)
-                                  Padding(
-                                    padding: const EdgeInsets.all(14.0),
+                                  const SizedBox(height: 8),
+                                  GestureDetector(
+                                 //   onTap: () => PhoneUtils.makePhoneCall(phone),
                                     child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                       decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(
-                                            color: Colors.white, width: 2),
-                                        image: const DecorationImage(
-                                          image: AssetImage(
-                                              'assets/images/background_parent.png'),
-                                          fit: BoxFit.cover,
-                                        ),
+                                        color: Colors.white,
+                                        border: Border.all(color: Palette.bgBorder),
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child: Column(
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          BankInfoRow(
-                                            title: 'Account Number',
-                                            value: _maskAccount(
-                                                bank?.accountLast4), // از مدل GuardianBanking
-                                          ),
-                                          BankInfoRow(
-                                            title: 'Transit No',
-                                            value: bank?.transitNumber ?? '',
-                                          ),
-                                          BankInfoRow(
-                                            title: 'Institution Number',
-                                            value: bank?.institutionNumber ?? '',
-                                          ),
+                                          SvgPicture.asset('assets/images/ic_call.svg', width: 18),
+                                          const SizedBox(width: 6),
+                                          Text(PhoneUtils.formatPhoneNumber(phone)),
                                         ],
                                       ),
                                     ),
                                   ),
 
-                                const SizedBox(height: 24),
-
-                                // Subsidy info (read-only)
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text('Subsidy or Benefit Program'),
-                                      Transform.scale(
-                                        scale: 0.85,
-                                        child: Switch(
-                                          activeColor: Palette.borderPrimary,
-                                          value: hasSubsidy,
-                                          onChanged: null, // read-only
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          );
-                        } else if (state is GuardianDashboardError) {
-                          return Center(child: Text(state.message));
-                        }
+                          ],
+                        ),
 
-                        return const SizedBox();
-                      },
+                        const SizedBox(height: 24),
+                        Container(
+                          width: double.infinity,
+                          height: screenHeight * 4 / 5,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(24),
+                              topRight: Radius.circular(24),
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 16),
+                            child: BlocBuilder<GuardianDashboardBloc, GuardianDashboardState>(
+                              builder: (context, gState) {
+                                if (gState is GuardianDashboardLoading) {
+                                  return const Center(child: CircularProgressIndicator());
+                                } else if (gState is GuardianDashboardLoaded) {
+                                  final bank = gState.banking;
+                                  final hasSubsidy = gState.subsidyToggleOn;
+
+                                  return SingleChildScrollView(
+                                    physics: const BouncingScrollPhysics(),
+                                    child: Column(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                child: InfoCard(
+                                                  icon: 'assets/images/ic_address_parent.svg',
+                                                  title: 'Address',
+                                                  subtitle: address,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 16),
+                                              Expanded(
+                                                child: InfoCard(
+                                                  icon: 'assets/images/ic_postal_code.svg',
+                                                  title: 'Postal Code',
+                                                  subtitle: postal,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 12),
+
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                                          child: InfoCardEmail(
+                                            icon: 'assets/images/ic_email_parent.svg',
+                                            title: 'Email',
+                                            subtitle: email,
+                                            fullWidth: true,
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 24),
+
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              const Text('Pre-Authorization Consent'),
+                                              Transform.scale(
+                                                scale: 0.85,
+                                                child: Switch(
+                                                  activeColor: Palette.borderPrimary,
+                                                  value: bank?.consent ?? false,
+                                                  onChanged: (v) {
+                                                    final dashboard = context.read<GuardianDashboardBloc>().state;
+                                                    if (dashboard is GuardianDashboardLoaded &&
+                                                        dashboard.banking != null) {
+                                                      context.read<GuardianDashboardBloc>().add(
+                                                        UpdateConsent(
+                                                          consentValue: v,
+                                                          fullName: parent.fullName,
+                                                          guardianId: dashboard.banking!.guardianId,
+                                                        ),
+                                                      );
+                                                    }
+                                                  },
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                        if (bank?.consent == true)
+                                          Padding(
+                                            padding: const EdgeInsets.all(14.0),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(16),
+                                                image: const DecorationImage(
+                                                  image: AssetImage('assets/images/background_parent.png'),
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              ),
+                                              child: Column(
+                                                children: [
+                                                  BankInfoRow(
+                                                    title: 'Account Number',
+                                                    value: _maskAccount(bank?.accountLast4),
+                                                  ),
+                                                  BankInfoRow(
+                                                    title: 'Transit No',
+                                                    value: bank?.transitNumber ?? '',
+                                                  ),
+                                                  BankInfoRow(
+                                                    title: 'Institution Number',
+                                                    value: bank?.institutionNumber ?? '',
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+
+                                        const SizedBox(height: 24),
+
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              const Text('Subsidy or Benefit Program'),
+                                              Transform.scale(
+                                                scale: 0.85,
+                                                child: Switch(
+                                                  activeColor: Palette.borderPrimary,
+                                                  value: hasSubsidy,
+                                                  onChanged: null,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                } else {
+                                  return const SizedBox.shrink();
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
+                );
+              } else {
+                return const SizedBox.shrink();
+              }
+            },
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
