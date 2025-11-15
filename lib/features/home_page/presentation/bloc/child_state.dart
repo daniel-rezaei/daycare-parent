@@ -2,28 +2,47 @@ import '../../domain/entities/child_entity.dart';
 
 abstract class ChildState {}
 
+// وضعیت اولیه قبل از هر کاری
 class ChildInitial extends ChildState {}
 
+// هنگام لود شدن داده‌ها
 class ChildLoading extends ChildState {}
 
-class ChildLoaded extends ChildState {
-  final ChildEntity child;
-  final String? selectedAvatar; // ✅ عکس انتخاب‌شده
+// وقتی لیست کودکان بارگذاری شد
+class ChildListLoaded extends ChildState {
+  final List<ChildEntity> children;
+  final int selectedIndex;
 
-  ChildLoaded(this.child, {this.selectedAvatar});
+  ChildListLoaded(this.children, {this.selectedIndex = 0});
 
-  // برای بروزرسانی آسان بدون از بین بردن بقیه داده‌ها
-  ChildLoaded copyWith({
-    ChildEntity? child,
-    String? selectedAvatar,
+  // کودک انتخاب‌شده
+  ChildEntity get selectedChild => children[selectedIndex];
+
+  // کپی با امکان بروزرسانی بدون از بین بردن داده‌های دیگر
+  ChildListLoaded copyWith({
+    List<ChildEntity>? children,
+    int? selectedIndex,
   }) {
-    return ChildLoaded(
-      child ?? this.child,
-      selectedAvatar: selectedAvatar ?? this.selectedAvatar,
+    return ChildListLoaded(
+      children ?? this.children,
+      selectedIndex: selectedIndex ?? this.selectedIndex,
     );
+  }
+
+  // ✅ mapping بین UUID کودک و numericId (برای DB)
+  Map<String, int> get uuidToNumericId {
+    // فرض می‌کنیم numericId همان index + 1 است؛ اگر DB عدد دیگری دارد، جایگزین کنید
+    return {for (var i = 0; i < children.length; i++) children[i].id: i + 1};
   }
 }
 
+// وقتی یک کودک انتخاب شد
+class ChildSelected extends ChildState {
+  final ChildEntity child;
+  ChildSelected(this.child);
+}
+
+// در صورت خطا
 class ChildError extends ChildState {
   final String message;
   ChildError(this.message);

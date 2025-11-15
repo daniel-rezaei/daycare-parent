@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -20,9 +21,9 @@ class ContactCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 🔹 ساخت URL کامل اگر فقط UUID داریم
+
     final imageProvider = (photo != null && photo!.isNotEmpty)
-        ? NetworkImage('http://51.79.53.56:8055/assets/$photo?access_token=1C1ROl_Te_A_sNZNO00O3k32OvRIPcSo')
+        ? CachedNetworkImageProvider('http://51.79.53.56:8055/assets/$photo?access_token=1C1ROl_Te_A_sNZNO00O3k32OvRIPcSo')
         : const AssetImage('assets/images/avatar_placeholder.png') as ImageProvider;
 
     return Container(

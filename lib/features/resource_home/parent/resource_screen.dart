@@ -10,9 +10,9 @@ import '../form/presentation/screen/form_screen.dart';
 
 
 class ResourceScreen extends StatefulWidget {
+  final String activeChildId;
 
-
-  const ResourceScreen({super.key});
+  const ResourceScreen({super.key, required this.activeChildId});
 
   @override
   State<ResourceScreen> createState() => _ResourceScreenState();
@@ -49,7 +49,7 @@ class _ResourceScreenState extends State<ResourceScreen> {
             elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {},
             ),
 
           ),
@@ -96,8 +96,8 @@ class _ResourceScreenState extends State<ResourceScreen> {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(16),
                                 image: DecorationImage(
-                                  image: AssetImage('assets/images/brand3_background.png'), // مسیر تصویر
-                                  fit: BoxFit.cover, // می‌تواند cover, contain و غیره باشد
+                                  image: AssetImage('assets/images/brand3_background.png'),
+                                  fit: BoxFit.cover,
                                 ),
                               ),child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -127,7 +127,7 @@ class _ResourceScreenState extends State<ResourceScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => FormScreen(),
+                                builder: (context) => FormScreen(childId: widget.activeChildId),
                               ),
                             );
                           },
@@ -137,8 +137,8 @@ class _ResourceScreenState extends State<ResourceScreen> {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(16),
                                 image: DecorationImage(
-                                  image: AssetImage('assets/images/brand2_background.png'), // مسیر تصویر
-                                  fit: BoxFit.cover, // می‌تواند cover, contain و غیره باشد
+                                  image: AssetImage('assets/images/brand2_background.png'),
+                                  fit: BoxFit.cover,
                                 ),
                               ),child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -168,7 +168,7 @@ class _ResourceScreenState extends State<ResourceScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => SharedScreen(),
+                                builder: (context) => SharedScreen(childId: widget.activeChildId),
                               ),
                             );
                           },
@@ -178,8 +178,8 @@ class _ResourceScreenState extends State<ResourceScreen> {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(16),
                                 image: DecorationImage(
-                                  image: AssetImage('assets/images/brand1_background.png'), // مسیر تصویر
-                                  fit: BoxFit.cover, // می‌تواند cover, contain و غیره باشد
+                                  image: AssetImage('assets/images/brand1_background.png'),
+                                  fit: BoxFit.cover,
                                 ),
                               ),child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -204,8 +204,6 @@ class _ResourceScreenState extends State<ResourceScreen> {
                           ),
                         ),
                     ]
-
-
                     )
 
                   ),

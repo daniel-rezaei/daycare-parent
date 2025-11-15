@@ -69,6 +69,16 @@ import 'features/parent_profile/domain/usecases/get_subsidy_toggle.dart';
 import 'features/parent_profile/presentation/bloc/guardian_banking_bloc.dart';
 import 'features/parent_profile/presentation/bloc/parent_profile_bloc.dart';
 import 'features/parent_profile/presentation/bloc/parent_profile_event.dart';
+import 'features/resource_home/document/data/repository/document_repository_impl.dart';
+import 'features/resource_home/document/domain/usecase/get_document_usecase.dart';
+import 'features/resource_home/document/presentation/bloc/document_bloc.dart';
+import 'features/resource_home/document/presentation/bloc/document_event.dart';
+import 'features/resource_home/form/data/repository/form_repository_impl.dart';
+import 'features/resource_home/form/domain/usecase/get_form_usecase.dart';
+import 'features/resource_home/form/presentation/bloc/form_bloc.dart';
+import 'features/resource_home/shared_media/data/repository/shared_media_repository_impl.dart';
+import 'features/resource_home/shared_media/domain/usecase/get_shared_media_usecase.dart';
+import 'features/resource_home/shared_media/presentation/bloc/shared_media_bloc.dart';
 
 
 List<BlocProvider> buildAppProviders() {
@@ -212,6 +222,20 @@ List<BlocProvider> buildAppProviders() {
         ),
       )..add(LoadBillingCardEvent()), // ✅ شروع بارگذاری خودکار
     ),
+    BlocProvider<DocumentBloc>(
+      create: (_) => DocumentBloc(
+        GetDocumentsUseCase(
+          DocumentRepositoryImpl(dioClient),
+        ),
+      )..add(LoadDocumentsEvent()),
+    ),
+    BlocProvider<FormBloc>(
+      create: (_) => FormBloc(
+        GetFormAssignmentsUseCase(FormRepositoryImpl(dioClient)),
+      ),
+    ),
+
+
 
     BlocProvider<BillingDocBloc>(
       create: (_) => BillingDocBloc(
@@ -222,12 +246,20 @@ List<BlocProvider> buildAppProviders() {
     ),
 
 
+    // BlocProvider<ChildBloc>(
+    //   create: (_) => ChildBloc(
+    //       GetChildDataUseCase(
+    //           ChildRepositoryImpl(dioClient)))
+    //     ..add(LoadChildData()),
+    //
+    // )
     BlocProvider<ChildBloc>(
       create: (_) => ChildBloc(
-          GetChildDataUseCase(
-              ChildRepositoryImpl(dioClient)))
-        ..add(LoadChildData()),
+        GetChildDataUseCase(
+          ChildRepositoryImpl(dioClient),
+        ),
+      )..add(LoadChildren()), // 🔹 قبلاً LoadChildData بود، حالا LoadChildren
+    ),
 
-    )
   ];
 }

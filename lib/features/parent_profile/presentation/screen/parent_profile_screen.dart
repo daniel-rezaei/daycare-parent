@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -30,7 +31,6 @@ class _ParentProfileWidgetState extends State<ParentProfileWidget> {
   @override
   void initState() {
     super.initState();
-    // بارگذاری داده‌ها بعد از اولین فریم
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ParentProfileBloc>().add(
         LoadParentProfileEvent(parentId: widget.user.id),
@@ -43,20 +43,17 @@ class _ParentProfileWidgetState extends State<ParentProfileWidget> {
         ),
       );
     });
-
   }
 
   Future<void> signOut(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
-
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginPage()),
           (route) => false,
     );
   }
-
 
   String _maskAccount(String? account) {
     if (account == null || account.length < 4) return account ?? '';
@@ -91,7 +88,6 @@ class _ParentProfileWidgetState extends State<ParentProfileWidget> {
       ),
       body: Stack(
         children: [
-
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -101,19 +97,13 @@ class _ParentProfileWidgetState extends State<ParentProfileWidget> {
               ),
             ),
           ),
-
           BlocBuilder<ParentProfileBloc, ParentProfileState>(
             builder: (context, state) {
-              // 🔹 حالت بارگذاری یا اولیه
               if (state is ParentProfileLoading || state is ParentProfileInitial) {
                 return const Center(child: CircularProgressIndicator());
-              }
-
-              else if (state is ParentProfileError) {
+              } else if (state is ParentProfileError) {
                 return Center(child: Text(state.message));
-              }
-
-              else if (state is ParentProfileLoaded) {
+              } else if (state is ParentProfileLoaded) {
                 final parent = state.parent;
                 final name = parent.fullName;
                 final email = parent.email ?? "-";
@@ -129,14 +119,13 @@ class _ParentProfileWidgetState extends State<ParentProfileWidget> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(height: kToolbarHeight + 40),
-
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             CircleAvatar(
                               radius: 40,
                               backgroundImage: (photo.isNotEmpty)
-                                  ? NetworkImage(
+                                  ? CachedNetworkImageProvider(
                                   'http://51.79.53.56:8055/assets/$photo?access_token=1C1ROl_Te_A_sNZNO00O3k32OvRIPcSo')
                                   : const AssetImage('assets/images/avatar1.png')
                               as ImageProvider,
@@ -155,7 +144,6 @@ class _ParentProfileWidgetState extends State<ParentProfileWidget> {
                                   ),
                                   const SizedBox(height: 8),
                                   GestureDetector(
-                                 //   onTap: () => PhoneUtils.makePhoneCall(phone),
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                       decoration: BoxDecoration(
@@ -173,13 +161,11 @@ class _ParentProfileWidgetState extends State<ParentProfileWidget> {
                                       ),
                                     ),
                                   ),
-
                                 ],
                               ),
                             ),
                           ],
                         ),
-
                         const SizedBox(height: 24),
                         Container(
                           width: double.infinity,
@@ -195,138 +181,155 @@ class _ParentProfileWidgetState extends State<ParentProfileWidget> {
                             padding: const EdgeInsets.only(top: 16),
                             child: BlocBuilder<GuardianDashboardBloc, GuardianDashboardState>(
                               builder: (context, gState) {
-                                if (gState is GuardianDashboardLoading) {
-                                  return const Center(child: CircularProgressIndicator());
-                                } else if (gState is GuardianDashboardLoaded) {
-                                  final bank = gState.banking;
-                                  final hasSubsidy = gState.subsidyToggleOn;
+                                // fallback وقتی هنوز داده نیامده یا خطا دارد
+                                Map<String, dynamic> bankData = {};
+                                bool hasSubsidy = false;
+                                bool consent = false;
 
-                                  return SingleChildScrollView(
-                                    physics: const BouncingScrollPhysics(),
-                                    child: Column(
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                                          child: Row(
-                                            children: [
-                                              Expanded(
-                                                child: InfoCard(
-                                                  icon: 'assets/images/ic_address_parent.svg',
-                                                  title: 'Address',
-                                                  subtitle: address,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 16),
-                                              Expanded(
-                                                child: InfoCard(
-                                                  icon: 'assets/images/ic_postal_code.svg',
-                                                  title: 'Postal Code',
-                                                  subtitle: postal,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                if (gState is GuardianDashboardLoaded) {
+                                  bankData = {
+                                    'accountLast4': gState.banking?.accountLast4,
+                                    'transitNumber': gState.banking?.transitNumber,
+                                    'institutionNumber': gState.banking?.institutionNumber,
+                                    'guardianId': gState.banking?.guardianId,
+                                  };
+                                  consent = gState.banking?.consent ?? false;
+                                  hasSubsidy = gState.subsidyToggleOn;
+                                }
 
-                                        const SizedBox(height: 12),
-
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                                          child: InfoCardEmail(
-                                            icon: 'assets/images/ic_email_parent.svg',
-                                            title: 'Email',
-                                            subtitle: email,
-                                            fullWidth: true,
-                                          ),
-                                        ),
-
-                                        const SizedBox(height: 24),
-
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              const Text('Pre-Authorization Consent'),
-                                              Transform.scale(
-                                                scale: 0.85,
-                                                child: Switch(
-                                                  activeColor: Palette.borderPrimary,
-                                                  value: bank?.consent ?? false,
-                                                  onChanged: (v) {
-                                                    final dashboard = context.read<GuardianDashboardBloc>().state;
-                                                    if (dashboard is GuardianDashboardLoaded &&
-                                                        dashboard.banking != null) {
-                                                      context.read<GuardianDashboardBloc>().add(
-                                                        UpdateConsent(
-                                                          consentValue: v,
-                                                          fullName: parent.fullName,
-                                                          guardianId: dashboard.banking!.guardianId,
-                                                        ),
-                                                      );
-                                                    }
-                                                  },
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-
-                                        if (bank?.consent == true)
-                                          Padding(
-                                            padding: const EdgeInsets.all(14.0),
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(16),
-                                                image: const DecorationImage(
-                                                  image: AssetImage('assets/images/background_parent.png'),
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              ),
-                                              child: Column(
-                                                children: [
-                                                  BankInfoRow(
-                                                    title: 'Account Number',
-                                                    value: _maskAccount(bank?.accountLast4),
-                                                  ),
-                                                  BankInfoRow(
-                                                    title: 'Transit No',
-                                                    value: bank?.transitNumber ?? '',
-                                                  ),
-                                                  BankInfoRow(
-                                                    title: 'Institution Number',
-                                                    value: bank?.institutionNumber ?? '',
-                                                  ),
-                                                ],
+                                return SingleChildScrollView(
+                                  physics: const BouncingScrollPhysics(),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: InfoCard(
+                                                icon: 'assets/images/ic_address_parent.svg',
+                                                title: 'Address',
+                                                subtitle: address,
                                               ),
                                             ),
-                                          ),
-
-                                        const SizedBox(height: 24),
-
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              const Text('Subsidy or Benefit Program'),
-                                              Transform.scale(
-                                                scale: 0.85,
-                                                child: Switch(
-                                                  activeColor: Palette.borderPrimary,
-                                                  value: hasSubsidy,
-                                                  onChanged: null,
-                                                ),
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: InfoCard(
+                                                icon: 'assets/images/ic_postal_code.svg',
+                                                title: 'Postal Code',
+                                                subtitle: postal,
                                               ),
-                                            ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                                        child: InfoCardEmail(
+                                          icon: 'assets/images/ic_email_parent.svg',
+                                          title: 'Email',
+                                          subtitle: email,
+                                          fullWidth: true,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 24),
+                                      // Pre-Authorization Consent
+                                      Align(
+                                      alignment: Alignment.centerLeft,
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(left: 16.0),
+                                          child: Text(
+                                          'Banking information',
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              color: Palette.textForeground
+                                            ),
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                  );
-                                } else {
-                                  return const SizedBox.shrink();
-                                }
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text('Pre-Authorization Consent'),
+                                            Transform.scale(
+                                              scale: 0.85,
+                                              child: Switch(
+                                                activeColor: Palette.borderPrimary,
+                                                value: consent,
+                                                onChanged: bankData['guardianId'] != null
+                                                    ? (v) {
+                                                  context
+                                                      .read<GuardianDashboardBloc>()
+                                                      .add(UpdateConsent(
+                                                    consentValue: v,
+                                                    fullName: parent.fullName,
+                                                    guardianId: bankData['guardianId'],
+                                                  ));
+                                                }
+                                                    : null,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      // بانک فقط وقتی موجود است
+                                      if (consent)
+                                        Padding(
+                                          padding: const EdgeInsets.all(14.0),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(16),
+                                              image: const DecorationImage(
+                                                image: AssetImage('assets/images/background_parent.png'),
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                            child: Column(
+                                              children: [
+                                                BankInfoRow(
+                                                  title: 'Account Number',
+                                                  value: _maskAccount(bankData['accountLast4']),
+                                                ),
+                                                BankInfoRow(
+                                                  title: 'Transit No',
+                                                  value: bankData['transitNumber'] ?? '',
+                                                ),
+                                                BankInfoRow(
+                                                  title: 'Institution Number',
+                                                  value: bankData['institutionNumber'] ?? '',
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      const SizedBox(height: 24),
+                                      // Subsidy
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text('Subsidy or Benefit Program'),
+                                            Transform.scale(
+                                              scale: 0.85,
+                                              child: Switch(
+                                                activeColor: Palette.borderPrimary,
+                                                value: hasSubsidy,
+                                                onChanged: null,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
                               },
                             ),
                           ),
@@ -345,3 +348,4 @@ class _ParentProfileWidgetState extends State<ParentProfileWidget> {
     );
   }
 }
+

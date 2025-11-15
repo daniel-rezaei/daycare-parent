@@ -263,6 +263,11 @@ class _ProgramPlanCardState extends State<ProgramPlanCard> {
                         return const Center(child: CircularProgressIndicator());
                       } else if (mealState is MealPlanLoaded) {
                         final meals = mealState.meals;
+
+                        // آرایه‌ی ثابت برای وعده‌ها (صبحانه، ناهار، میان‌وعده)
+                        final defaultMealTypes = ['breakfast', 'lunch', 'snack'];
+                        final cardCount = defaultMealTypes.length;
+
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -276,24 +281,25 @@ class _ProgramPlanCardState extends State<ProgramPlanCard> {
                             const SizedBox(height: 12),
                             SizedBox(
                               height: 165,
-                              child: meals.isEmpty
-                                  ? Center(
-                                child: Text(
-                                  "No meals available",
-                                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                                ),
-                              )
-                                  : ListView.builder(
-                                itemCount: meals.length,
+                              child: ListView.builder(
+                                itemCount: cardCount,
                                 scrollDirection: Axis.horizontal,
                                 itemBuilder: (context, index) {
-                                  final meal = meals[index];
-                                  final iconPath = _getMealIcon(meal.mealType);
+                                  // mealType همیشه از ترتیب ثابت گرفته میشه
+                                  final mealType = defaultMealTypes[index];
+                                  final iconPath = _getMealIcon(mealType);
+
+                                  // اگه داده هست همون رو نشون بده، اگه نیست فقط title خط تیره
+                                  String title = '-';
+                                  if (meals.length > index && meals[index].mealName?.isNotEmpty == true) {
+                                    title = meals[index].mealName!;
+                                  }
+
                                   return SizedBox(
                                     width: 130,
                                     child: MealContainer(
-                                      title: meal.mealName,
-                                      subtitle: meal.mealType,
+                                      title: title,
+                                      subtitle: mealType, // همون وعده (breakfast/lunch/snack)
                                       icon: iconPath,
                                     ),
                                   );
@@ -301,7 +307,6 @@ class _ProgramPlanCardState extends State<ProgramPlanCard> {
                               ),
                             ),
                           ],
-
                         );
                       } else if (mealState is MealPlanError) {
                         return Center(child: Text('Error: ${mealState.message}'));
@@ -309,6 +314,7 @@ class _ProgramPlanCardState extends State<ProgramPlanCard> {
                       return const SizedBox();
                     },
                   ),
+
                   const SizedBox(height: 16),
 
                   // ----------------- Upcoming Events -----------------

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -187,7 +188,7 @@ class _ChildProfileWidgetState extends State<ChildProfileWidget> {
                         backgroundColor: Colors.grey.shade200,
                         backgroundImage: (widget.photoUrl != null && widget.photoUrl!.isNotEmpty)
                             ? (widget.photoUrl!.startsWith('http')
-                            ? NetworkImage(widget.photoUrl!)
+                            ? CachedNetworkImageProvider( widget.photoUrl!,)
                             : AssetImage(widget.photoUrl!) as ImageProvider)
                             : null,
                         child: (widget.photoUrl == null || widget.photoUrl!.isEmpty)
