@@ -30,7 +30,6 @@ class MediaGridItem extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: const BoxDecoration(
-                color: Colors.white70,
                 shape: BoxShape.circle,
               ),
               child: SvgPicture.asset(
@@ -67,7 +66,7 @@ class MediaGridItem extends StatelessWidget {
 
   Widget _buildImageThumbnail() {
     return CachedNetworkImage(
-      imageUrl:item.imagePath,
+      imageUrl: item.thumbnailPath ?? item.imagePath,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
@@ -83,7 +82,7 @@ class MediaGridItem extends StatelessWidget {
       children: [
         // هرچی داری را نمایش بده
         CachedNetworkImage(
-        imageUrl:  item.imagePath,   // اگر Directus thumbnail بده
+          imageUrl: item.thumbnailPath ?? item.imagePath,  // اگر Directus thumbnail بده
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,

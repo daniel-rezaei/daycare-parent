@@ -10,6 +10,7 @@ class SharedMediaModel extends SharedMediaEntity {
     required super.privacy,
     super.tags,
     super.fileIds,
+    super.thumbnail,
   });
 
   factory SharedMediaModel.fromJson(Map<String, dynamic> json) {
@@ -37,6 +38,7 @@ class SharedMediaModel extends SharedMediaEntity {
 
       tags: json['tags'],
       fileIds: files,
+      thumbnail: json['thumbnail'] != null ? Map<String, dynamic>.from(json['thumbnail']) : null,
     );
   }
 }

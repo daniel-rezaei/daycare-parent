@@ -84,14 +84,14 @@ class _ParentMessageScreenState extends State<ParentMessageScreen> {
                       child: Column(
                           children: [
                             InkWell(
-                              // onTap: () {
-                              //   Navigator.push(
-                              //     context,
-                              //     MaterialPageRoute(
-                              //       builder: (context) => DocumentScreen(),
-                              //     ),
-                              //   );
-                              // },
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ChatPageSample(),
+                                  ),
+                                );
+                              },
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: Container(
@@ -125,14 +125,14 @@ class _ParentMessageScreenState extends State<ParentMessageScreen> {
                             ),
 
                             InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ChatPageSample(),
-                                  ),
-                                );
-                              },
+                              // onTap: () {
+                              //   Navigator.push(
+                              //     context,
+                              //     MaterialPageRoute(
+                              //       builder: (context) => ChatPageSample(),
+                              //     ),
+                              //   );
+                              // },
                               child: Padding(
                                 padding: const EdgeInsets.only(left: 16.0,right: 16,top: 6),
                                 child: Container(

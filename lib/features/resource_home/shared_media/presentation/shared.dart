@@ -1,11 +1,17 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:parent_app/features/resource_home/shared_media/domain/entity/shared_media_entity.dart';
 import 'package:parent_app/features/resource_home/shared_media/presentation/widgets/media_grid_item.dart';
 import 'package:parent_app/features/resource_home/shared_media/presentation/widgets/show_art_bottom_sheet.dart';
+import 'package:parent_app/features/resource_home/shared_media/presentation/widgets/show_bottomsheet_sort_gallery.dart';
+import 'package:parent_app/features/resource_home/shared_media/presentation/widgets/show_filter_bottom_sheet.dart';
 import 'package:parent_app/resorces/pallete.dart';
 
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/utils/thumbnail.dart';
 import '../../../home_page/presentation/bloc/child_bloc.dart';
 import '../../../home_page/presentation/bloc/child_state.dart';
 import '../data/repository/shared_media_repository_impl.dart';
@@ -109,7 +115,9 @@ class _SharedScreenState extends State<SharedScreen> {
                         ),
                         const SizedBox(width: 8),
                         GestureDetector(
-                          onTap: () {},
+                          onTap: () {
+                            showFilterBottomSheet(context);
+                          },
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
@@ -148,9 +156,15 @@ class _SharedScreenState extends State<SharedScreen> {
                               if (state.media.isEmpty) {
                                 return const Center(child: Text('No media available.'));
                               }
-
+                              for (var entity in state.media) {
+                                print("RAW FILE IDS => ${entity.fileIds}");
+                                print("RAW THUMBNAIL => ${entity.thumbnail}");
+                                print("RAW MEDIA TYPE => ${entity.mediaType}");
+                              }
                               final mediaItems = state.media.map((entity) => MediaItem(
                                 imagePath: getFileUrl(entity.fileIds),
+
+                                thumbnailPath: entity.thumbnail != null ? assetUrl(entity.thumbnail!['id']) : null,
                                 tag: entity.activityType ?? entity.tags ?? '',
                                 createdAt: entity.createdAt ?? '',
                                 isLocked: false,
@@ -169,69 +183,93 @@ class _SharedScreenState extends State<SharedScreen> {
                               return SingleChildScrollView(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: groupedItems.entries.map((entry) {
-                                    return Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                                          child: Center(
-                                            child: Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color: Palette.bgBackground80,
-                                                borderRadius: BorderRadius.circular(16),
-                                              ),
-                                              child: Text(
-                                                entry.key,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 14,
-                                                  color: Palette.textSecondaryForeground,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            'Gallery',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 16,
+                                              color: Palette.textForeground,
+                                            ),
+                                          ),
+                                          GestureDetector(onTap: (){
+                                            showBottomSheetSortGallery(context);
+                                          },
+                                              child: SvgPicture.asset(
+                                                  'assets/images/ic_sort_gallery.svg')),
+                                        ],
+                                      ),),
+                                  ...groupedItems.entries.map((entry) {
+                                      return Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                                            child: Center(
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: Palette.bgBackground80,
+                                                  borderRadius: BorderRadius.circular(16),
+                                                ),
+                                                child: Text(
+                                                  entry.key,
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 14,
+                                                    color: Palette.textSecondaryForeground,
+                                                  ),
                                                 ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                        GridView.builder(
-                                          shrinkWrap: true,
-                                          physics: const NeverScrollableScrollPhysics(),
-                                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                            crossAxisCount: 3,
-                                            crossAxisSpacing: 8,
-                                            mainAxisSpacing: 8,
+                                          GridView.builder(
+                                            shrinkWrap: true,
+                                            physics: const NeverScrollableScrollPhysics(),
+                                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                              crossAxisCount: 3,
+                                              crossAxisSpacing: 8,
+                                              mainAxisSpacing: 8,
+                                            ),
+                                            itemCount: entry.value.length,
+                                            itemBuilder: (context, index) {
+                                              final media = entry.value[index];
+                                              return GestureDetector(
+                                                onTap: () {        if (media.isVideo) {
+                                                  // باز کردن Bottom Sheet ویدیو
+                                                  showModalBottomSheet(
+                                                    context: context,
+                                                    isScrollControlled: true,
+                                                    backgroundColor: Colors.transparent,
+                                                    builder: (_) => ArtBottomSheet(
+                                                      videoUrl: media.imagePath,
+                                                      videoUrlThumbnail: media.thumbnailPath ?? '',
+                                                      caption: media.caption ?? '',
+                                                      tag: media.tag ?? '',
+                                                      privacy: media.privacy,
+                                                      createdAt: media.createdAt, // ← String مستقیم
+                                                    ),
+                                                  );
+                                                } else {
+                                                  // برای عکس‌ها: می‌توانید fullscreen نمایش دهید
+                                                }
+                                                },
+                                                child: MediaGridItem(item: media),
+                                              );
+                                            },
                                           ),
-                                          itemCount: entry.value.length,
-                                          itemBuilder: (context, index) {
-                                            final media = entry.value[index];
-                                            return GestureDetector(
-                                              onTap: () {        if (media.isVideo) {
-                                                // باز کردن Bottom Sheet ویدیو
-                                                showModalBottomSheet(
-                                                  context: context,
-                                                  isScrollControlled: true,
-                                                  backgroundColor: Colors.transparent,
-                                                  builder: (_) => ArtBottomSheet(
-                                                    videoUrl: media.imagePath,
-                                                    videoUrlThumbnail: media.thumbnailPath ?? '',
-                                                    caption: media.caption ?? '',
-                                                    tag: media.tag ?? '',
-                                                    privacy: media.privacy,
-                                                    createdAt: media.createdAt, // ← String مستقیم
-                                                  ),
-                                                );
-                                              } else {
-                                                // برای عکس‌ها: می‌توانید fullscreen نمایش دهید
-                                              }
-                                              },
-                                              child: MediaGridItem(item: media),
-                                            );
-                                          },
-                                        ),
-                                        const SizedBox(height: 16),
-                                      ],
-                                    );
-                                  }).toList(),
+                                          const SizedBox(height: 16),
+                                        ],
+                                      );
+                                    }).toList(),
+                                  ]
+
+
                                 ),
                               );
                             }

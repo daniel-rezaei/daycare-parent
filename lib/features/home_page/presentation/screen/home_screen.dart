@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../login/domain/entity/user_entity.dart';
 import '../../../message/presentation/screen/message_screen.dart';
 import '../../../message/presentation/screen/parent_message_screen.dart';
+import '../../../notification/presentation/notification_screen.dart';
 import '../../../resource_home/parent/resource_screen.dart';
 import '../bloc/bottom_nav_bloc.dart';
 import '../bloc/bottom_nav_state.dart';
@@ -38,7 +39,7 @@ class HomeScreen extends StatelessWidget {
           else
             const Center(child: CircularProgressIndicator()),
           const Center(child: Text("Magic Page")),
-          const Center(child: Text("Notifications Page")),
+          NotificationsScreen(),
           if (activeChildId != null)
             ResourceScreen(activeChildId: activeChildId)
           else

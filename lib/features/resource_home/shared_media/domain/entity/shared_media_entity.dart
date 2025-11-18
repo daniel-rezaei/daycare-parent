@@ -7,6 +7,7 @@ class SharedMediaEntity {
   final String? activityType; // اضافه شد
   final List<String>? privacy;
   final List<String>? fileIds;
+  final Map<String, dynamic>? thumbnail;
 
   const SharedMediaEntity({
     required this.id,
@@ -17,5 +18,6 @@ class SharedMediaEntity {
     this.privacy,
     this.tags,
     this.fileIds,
+    this.thumbnail,
   });
 }
