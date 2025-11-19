@@ -6,13 +6,14 @@ class ChildEntity {
   final String? photo;
   final List<ContactEntity> contacts;
   final List<ClassEntity> classes;
-
+  final List<String> guardians;
   ChildEntity({
     required this.id,
     this.dob,
     this.photo,
     required this.contacts,
     required this.classes,
+    required this.guardians,
   });
 }
 

@@ -321,9 +321,12 @@ class _ParentProfileWidgetState extends State<ParentProfileWidget> {
                                               child: Switch(
                                                 activeColor: Palette.borderPrimary,
                                                 value: hasSubsidy,
-                                                onChanged: null,
+                                                onChanged: (v) {
+                                                  context.read<GuardianDashboardBloc>().add(UpdateSubsidyToggle(v));
+                                                },
                                               ),
                                             ),
+
                                           ],
                                         ),
                                       ),

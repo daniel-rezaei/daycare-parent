@@ -107,53 +107,60 @@ class ProfileAvatarSelector extends StatelessWidget {
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(children.length, (index) {
-                  final c = children[index];
-                  final thumbUrl = c.photo != null
-                      ? 'http://51.79.53.56:8055/assets/${c.photo}?access_token=1C1ROl_Te_A_sNZNO00O3k32OvRIPcSo'
-                      : null;
+                children: List.generate(
+                  // 1. فقط وقتی بچه‌ها بیشتر از یک نفر هستن ردیف کوچک‌ها ساخته میشه
+                  children.length > 1 ? children.length : 0,
+                      (index) {
+                    final c = children[index];
 
-                  final isSelected = selectedIndex == index;
+                    // 2. اگه این بچه همون selected هست، ردش کن
+                    if (index == selectedIndex) return const SizedBox.shrink();
 
-                  return GestureDetector(
-                    onTap: () {
-                      context.read<ChildBloc>().add(SelectChild(index));
-                    },
-                    child: Transform.translate(
-                      offset: Offset(index * -12, 0), // 🔥 همه آیتم‌ها اوورلپ یکسان دارند
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isSelected ? Palette.borderPrimary : Colors.grey.shade400,
-                            width: isSelected ? 2 : 1,
+                    final thumbUrl = c.photo != null
+                        ? 'http://51.79.53.56:8055/assets/${c.photo}?access_token=1C1ROl_Te_A_sNZNO00O3k32OvRIPcSo'
+                        : null;
+
+                    return GestureDetector(
+                      onTap: () {
+                        context.read<ChildBloc>().add(SelectChild(index));
+                      },
+                      child: Transform.translate(
+                        offset: Offset(index * -12, 0),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: selectedIndex == index
+                                  ? Palette.borderPrimary
+                                  : Colors.grey.shade400,
+                              width: selectedIndex == index ? 2 : 1,
+                            ),
                           ),
-                        ),
-                        child: ClipOval(
-                          child: thumbUrl != null
-                              ? Image.network(
-                            thumbUrl,
-                            key: ValueKey(c.id),
-                            fit: BoxFit.cover,
-                          )
-                              : Center(
-                            child: Text(
-                              c.contacts.isNotEmpty
-                                  ? c.contacts.first.firstName[0].toUpperCase()
-                                  : '?',
-                              style: const TextStyle(fontSize: 12),
+                          child: ClipOval(
+                            child: thumbUrl != null
+                                ? Image.network(
+                              thumbUrl,
+                              key: ValueKey(c.id),
+                              fit: BoxFit.cover,
+                            )
+                                : Center(
+                              child: Text(
+                                c.contacts.isNotEmpty
+                                    ? c.contacts.first.firstName[0].toUpperCase()
+                                    : '?',
+                                style: const TextStyle(fontSize: 12),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                }),
+                    );
+                  },
+                ),
               )
-
             ],
           );
         }

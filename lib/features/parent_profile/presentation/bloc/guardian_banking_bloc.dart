@@ -19,6 +19,7 @@ class GuardianDashboardBloc extends Bloc<GuardianDashboardEvent, GuardianDashboa
 
     on<LoadGuardianDashboard>(_onLoadDashboard);
     on<UpdateConsent>(_onUpdateConsent);
+    on<UpdateSubsidyToggle>(_onUpdateSubsidyToggle);
   }
 
   Future<void> _onLoadDashboard(
@@ -78,6 +79,25 @@ class GuardianDashboardBloc extends Bloc<GuardianDashboardEvent, GuardianDashboa
       }
     }
   }
+  Future<void> _onUpdateSubsidyToggle(
+      UpdateSubsidyToggle event,
+      Emitter<GuardianDashboardState> emit,
+      ) async {
+    final currentState = state;
+    if (currentState is GuardianDashboardLoaded) {
+      try {
+        // اگر لازم داری تغییر در سرور ذخیره بشه، اینجا repo.updateSubsidyToggle(...) اضافه کن
+
+        emit(GuardianDashboardLoaded(
+          banking: currentState.banking,
+          subsidyToggleOn: event.value, // فقط state رو آپدیت میکنیم
+        ));
+      } catch (e) {
+        emit(GuardianDashboardError("Failed to update subsidy: $e"));
+      }
+    }
+  }
+
 }
 
 

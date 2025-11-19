@@ -6,12 +6,12 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/utils/phone_utils.dart';
 import '../../../../resorces/pallete.dart';
+import '../bloc/child_schedule_bloc.dart';
 import '../bloc/child_schedule_event.dart';
+import '../bloc/child_schedule_state.dart';
 import '../bloc/health_bloc.dart';
 import '../bloc/health_event.dart';
 import '../bloc/health_state.dart';
-import '../bloc/child_schedule_bloc.dart';
-import '../bloc/child_schedule_state.dart';
 import '../bloc/guardian_bloc.dart';
 import '../bloc/emergency_contacts_bloc.dart';
 import '../bloc/pick_up_bloc.dart';
@@ -60,7 +60,7 @@ class _ChildProfileWidgetState extends State<ChildProfileWidget> {
     context.read<EmergencyContactsBloc>().add(LoadEmergencyContacts(id));
     context.read<PickupBloc>().add(LoadAuthorizedPickups(id));
     context.read<HealthBloc>().add(LoadHealthCounts(id));
-    context.read<ChildScheduleBloc>().add(LoadChildSchedule()); // فرضی
+    context.read<ChildScheduleBloc>().add(LoadChildSchedule(widget.childId!));
   }
 
   String formatDate(DateTime? date) {

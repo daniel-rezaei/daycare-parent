@@ -24,3 +24,7 @@ class UpdateConsent extends GuardianDashboardEvent {
     required this.fullName,
   });
 }
+class UpdateSubsidyToggle extends GuardianDashboardEvent {
+  final bool value;
+  UpdateSubsidyToggle(this.value);
+}

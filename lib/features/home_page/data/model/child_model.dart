@@ -56,6 +56,7 @@ class ChildModel extends ChildEntity {
     required super.photo,
     required super.contacts,
     required super.classes,
+    required super.guardians,
   });
 
   factory ChildModel.fromJson(Map<String, dynamic> json) {
@@ -64,7 +65,6 @@ class ChildModel extends ChildEntity {
     final contactData = json['contact_id'];
 
     if (contactData is List) {
-      // حالت: [ { Contacts_id: {...} }, { Contacts_id: {...} } ]
       contacts = contactData.map((e) {
         if (e is Map && e.containsKey('Contacts_id')) {
           final contactJson = e['Contacts_id'];
@@ -80,17 +80,17 @@ class ChildModel extends ChildEntity {
         );
       }).toList();
     } else if (contactData is Map) {
-      // حالت: { id: ..., first_name: ... } یا { Contacts_id: {...} }
       if (contactData.containsKey('Contacts_id')) {
-        contacts = [ContactModel.fromJson(Map<String, dynamic>.from(contactData['Contacts_id']))];
+        contacts = [
+          ContactModel.fromJson(Map<String, dynamic>.from(contactData['Contacts_id']))
+        ];
       } else {
         contacts = [ContactModel.fromJson(Map<String, dynamic>.from(contactData))];
       }
-    } else if (contactData is String && contactData.isNotEmpty) {
-      // ✅ حالت رشته‌ای
+    } else if (contactData != null) {
       contacts = [
         ContactModel(
-          id: contactData,
+          id: contactData.toString(),
           firstName: '',
           lastName: '',
           role: '',
@@ -125,11 +125,10 @@ class ChildModel extends ChildEntity {
       } else {
         classes = [ClassModel.fromJson(Map<String, dynamic>.from(roomData))];
       }
-    } else if (roomData is String && roomData.isNotEmpty) {
-      // ✅ حالت رشته‌ای
+    } else if (roomData != null) {
       classes = [
         ClassModel(
-          id: roomData,
+          id: roomData.toString(),
           roomName: '',
           ageGroup: '',
           ageGroupId: '',
@@ -139,18 +138,24 @@ class ChildModel extends ChildEntity {
       ];
     }
 
+    // --- GUARDIANS ---
+    List<String> guardians = [];
+    final guardiansData = json['guardians'];
+    if (guardiansData is List) {
+      guardians = guardiansData.map((e) => e.toString()).toList(); // تبدیل به String
+    }
+
     return ChildModel(
-      id: json['id'] ?? '',
+      id: json['id']?.toString() ?? '',
       photo: json['photo'],
       dob: json['dob'] != null ? DateTime.tryParse(json['dob']) : null,
       contacts: contacts,
       classes: classes,
+      guardians: guardians,
     );
   }
-
-
-
 }
+
 
 
 

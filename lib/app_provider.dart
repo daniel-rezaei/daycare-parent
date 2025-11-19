@@ -135,8 +135,9 @@ List<BlocProvider> buildAppProviders() {
         GetChildScheduleUseCase(
           ChildScheduleRepositoryImpl(DioClient()),
         ),
-      )..add(LoadChildSchedule()),
+      ),
     ),
+
     BlocProvider<BillingSummeryBloc>(
       create: (_) => BillingSummeryBloc(
         GetBillingSummaryUseCase(
