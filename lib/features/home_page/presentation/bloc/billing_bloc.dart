@@ -13,11 +13,12 @@ class BillingBloc extends Bloc<BillingEvent, BillingState> {
     on<LoadBilling>((event, emit) async {
       emit(BillingLoading());
       try {
-        final billings = await getBillingUseCase();
+        final billings = await getBillingUseCase(childId: event.childId);
         emit(BillingLoaded(billings));
       } catch (e) {
         emit(BillingError(e.toString()));
       }
     });
+
   }
 }

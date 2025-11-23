@@ -30,6 +30,7 @@ import 'features/billing/presentation/bloc/billing_card_event.dart';
 import 'features/billing/presentation/bloc/billing_doc_bloc.dart';
 import 'features/billing/presentation/bloc/billing_summery_bloc.dart';
 import 'features/billing/presentation/bloc/billing_summery_event.dart';
+import 'features/billing/presentation/screen/billing_page.dart';
 import 'features/child_profile/data/repository/child_schedule_repository_impl.dart';
 import 'features/child_profile/data/repository/emergency_repository_contact_impl.dart';
 import 'features/child_profile/data/repository/health_repository_impl.dart';
@@ -63,6 +64,10 @@ import 'features/home_page/presentation/bloc/parent_contact_event.dart';
 import 'features/login/data/repository/auth_repository_impl.dart';
 import 'features/login/domain/usecase/login_usecase.dart';
 import 'features/login/presentation/bloc/auth_bloc.dart';
+import 'features/notification/data/repository/notification_repository_impl.dart';
+import 'features/notification/domain/usecase/get_notification_usecase.dart';
+import 'features/notification/presentation/bloc/notification_bloc.dart';
+import 'features/notification/presentation/notification_screen.dart';
 import 'features/parent_profile/data/repository/guardian_banking_repository_impl.dart' as parent_repo;
 import 'features/parent_profile/domain/usecases/get_guardian_banking.dart';
 import 'features/parent_profile/domain/usecases/get_subsidy_toggle.dart';
@@ -111,7 +116,7 @@ List<BlocProvider> buildAppProviders() {
         GetAttendanceChildUseCase(
           AttendanceChildRepositoryImpl(dioClient),
         ),
-      ), // ❌ دیگر نیازی نیست LoadAttendanceChild بدون childId فراخوانی شود
+      ),
     ),
 
 
@@ -123,12 +128,20 @@ List<BlocProvider> buildAppProviders() {
       )..add(LoadEvents()),
     ),
     BlocProvider<BillingBloc>(
-      create: (_) => BillingBloc(
+      create: (context) => BillingBloc(
         GetBillingUseCase(
           BillingRepositoryImpl(DioClient()),
         ),
-      )..add(LoadBilling()),
+      ),
     ),
+
+    BlocProvider<NotificationBloc>(
+      create: (_) => NotificationBloc(
+        GetNotificationsUseCase(NotificationRepositoryImpl(DioClient())),
+      ),
+    ),
+
+
 
     BlocProvider<ChildScheduleBloc>(
       create: (_) => ChildScheduleBloc(
@@ -138,21 +151,15 @@ List<BlocProvider> buildAppProviders() {
       ),
     ),
 
-    BlocProvider<BillingSummeryBloc>(
-      create: (_) => BillingSummeryBloc(
-        GetBillingSummaryUseCase(
-          BillingSummeryRepositoryImpl(dioClient),
-        ),
-      )..add(LoadBillingSummaryEvent()),
-    ),
-
-    BlocProvider<GuardianBloc>(
-      create: (_) => GuardianBloc(
+    BlocProvider<BillingSummeryBloc>(create: (_) => BillingSummeryBloc(
+        GetBillingSummaryUseCase(BillingSummeryRepositoryImpl(
+            dioClient)))),
+    BlocProvider<GuardianBloc>(create: (_) => GuardianBloc(
         GetPrimaryGuardiansUseCase(
-          GuardianRepositoryImpl(DioClient()),
-        ),
-      ),
-    ),
+            GuardianRepositoryImpl(
+                DioClient()
+            )))),
+
 
     BlocProvider<EmergencyContactsBloc>(
       create: (context) => EmergencyContactsBloc(
@@ -208,7 +215,7 @@ List<BlocProvider> buildAppProviders() {
         return GuardianDashboardBloc(
           getBanking: getBanking,
           getSubsidyToggle: getSubsidy,
-          repo: bankingRepository, // ✅ حتماً اینو اضافه کن
+          repo: bankingRepository,
         );
       },
     ),
@@ -221,7 +228,7 @@ List<BlocProvider> buildAppProviders() {
         getPaymentsUseCase: GetPaymentsUseCase(
           BillingCardRepositoryImpl(dioClient),
         ),
-      )..add(LoadBillingCardEvent()), // ✅ شروع بارگذاری خودکار
+      )..add(LoadBillingCardEvent()),
     ),
     BlocProvider<DocumentBloc>(
       create: (_) => DocumentBloc(
@@ -259,7 +266,7 @@ List<BlocProvider> buildAppProviders() {
         GetChildDataUseCase(
           ChildRepositoryImpl(dioClient),
         ),
-      )..add(LoadChildren()), // 🔹 قبلاً LoadChildData بود، حالا LoadChildren
+      )..add(LoadChildren()),
     ),
 
   ];

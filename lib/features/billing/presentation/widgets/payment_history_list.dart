@@ -128,13 +128,13 @@ class PaymentsHistoryList extends StatelessWidget {
             cards.add(TransactionCardCollapse(
               date: dateFormat.format(invoice.issueDate),
               subtitle: invoice.invoiceNumber,
-              status: "\$${invoice.totalMinor}",
+              status: "\$${invoice.totalMinor.toStringAsFixed(2)}",
               statusColor: Colors.red,
               type: invoice.status,
               description: invoice.meta ?? "",
-              amount: "\$${invoice.totalMinor}",
+              amount: "\$${invoice.totalMinor.toStringAsFixed(2)}",
               amountColor: Colors.red,
-              balance: "\$${invoice.balanceMinor}",
+              balance: "\$${invoice.balanceMinor.toStringAsFixed(2)}",
             ));
             cards.add(const SizedBox(height: 12));
           }
@@ -144,11 +144,11 @@ class PaymentsHistoryList extends StatelessWidget {
             cards.add(TransactionCardCollapse(
               date: dateFormat.format(payment.paymentDate),
               subtitle: payment.paymentMethod ?? payment.provider ?? "Payment",
-              status: "\$${payment.amountMinor}",
+              status: "\$${payment.amountMinor.toStringAsFixed(2)}",
               statusColor: Colors.green,
               type: payment.status,
               description: payment.meta ?? payment.provider ?? "",
-              amount: "\$${payment.amountMinor}",
+              amount: "\$${payment.amountMinor.toStringAsFixed(2)}",
               amountColor: Colors.green,
               balance: "",
             ));

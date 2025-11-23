@@ -23,9 +23,6 @@ class HomeScreen extends StatelessWidget {
       builder: (context, childState) {
         String? activeChildId;
 
-        // if (childState is ChildLoaded) {
-        //   activeChildId = childState.child.id;
-        // }
         if (childState is ChildSelected) {
           activeChildId = childState.child.id;
         } else if (childState is ChildListLoaded) {
@@ -39,7 +36,10 @@ class HomeScreen extends StatelessWidget {
           else
             const Center(child: CircularProgressIndicator()),
           const Center(child: Text("Magic Page")),
-          NotificationsScreen(),
+          if (activeChildId != null)
+            NotificationsScreen(activeChildId: activeChildId)
+          else
+            const Center(child: CircularProgressIndicator()),
           if (activeChildId != null)
             ResourceScreen(activeChildId: activeChildId)
           else

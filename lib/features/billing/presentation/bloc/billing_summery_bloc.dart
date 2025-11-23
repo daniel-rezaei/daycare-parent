@@ -14,7 +14,7 @@ class BillingSummeryBloc extends Bloc<BillingSummeryEvent, BillingSummeryState> 
       emit(BillingSummeryLoading());
 
       try {
-        final summary = await useCase();
+        final summary = await useCase(childId: event.childId); // ← پاس دادن childId
         emit(BillingSummeryLoaded(summary));
       } catch (e) {
         emit(BillingSummeryError(e.toString()));

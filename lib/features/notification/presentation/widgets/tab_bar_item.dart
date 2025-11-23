@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 
 class TabItem extends StatelessWidget {
   final String title;
-  final int count;
+  final int? count;
 
   const TabItem({
     super.key,
     required this.title,
-    required this.count,
+     this.count,
   });
 
   @override

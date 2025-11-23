@@ -4,18 +4,29 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../bloc/billing_summery_bloc.dart';
+import '../bloc/billing_summery_event.dart';
 import '../bloc/billing_summery_state.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/payment_history_list.dart';
 
 class BillingPage extends StatefulWidget {
-  const BillingPage({super.key});
+  final String childId;
+  const BillingPage({super.key, required this.childId});
 
   @override
   State<BillingPage> createState() => _BillingPageState();
+
 }
 
 class _BillingPageState extends State<BillingPage> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<BillingSummeryBloc>().add(
+      LoadBillingSummaryEvent(widget.childId),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(

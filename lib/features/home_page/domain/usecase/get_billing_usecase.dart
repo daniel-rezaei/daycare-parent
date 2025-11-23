@@ -7,7 +7,7 @@ class GetBillingUseCase {
 
   GetBillingUseCase(this.repository);
 
-  Future<List<BillingEntity>> call() async {
-    return await repository.getBillings();
+  Future<List<BillingEntity>> call({required String childId})async{
+    return await repository.getBillings(childId);
   }
 }

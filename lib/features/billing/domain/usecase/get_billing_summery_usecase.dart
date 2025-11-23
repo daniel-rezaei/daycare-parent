@@ -10,7 +10,8 @@ class GetBillingSummaryUseCase {
 
   GetBillingSummaryUseCase(this.repository);
 
-  Future<BillingSummaryEntity> call() async {
-    return repository.getParentBillingSummary();
+  Future<BillingSummaryEntity> call({required String childId}) async {
+    return await repository.getParentBillingSummary( childId: childId);
   }
 }
+

@@ -27,6 +27,7 @@ class LearningPlanRepositoryImpl implements LearningPlanRepository {
     );
 
     print('🟢 Response raw data: ${response.data}');
+    print("🟣 AGE GROUP FILTER = $ageGroupId");
 
     final data = response.data['data'] as List;
     return data.map((json) => LearningPlanModelModel.fromJson(json)).toList();

@@ -11,6 +11,7 @@ import '../bloc/child_state.dart';
 import '../bloc/event_bloc.dart';
 import '../bloc/event_state.dart';
 import '../bloc/learning_plan_bloc.dart';
+import '../bloc/learning_plan_event.dart';
 import '../bloc/learning_plan_state.dart';
 import '../bloc/meal_plan_bloc.dart';
 import '../bloc/meal_plan_state.dart';
@@ -171,6 +172,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin {
+  bool _billingLoaded = false;
+  bool _attendanceLoaded = false;
   @override
   bool get wantKeepAlive => true;
 
@@ -224,33 +227,44 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
                     const Center(child: ProfileAvatarSelector()),
                     const SizedBox(height: 8),
 
-                    // 🔹 اطلاعات بچه فعلی
+
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: BlocBuilder<ChildBloc, ChildState>(
                         builder: (context, state) {
                           String? currentChildId;
-
                           if (state is ChildSelected) {
                             currentChildId = state.child.id;
                           } else if (state is ChildListLoaded) {
                             currentChildId = state.selectedChild.id;
                           }
 
-                          if (currentChildId == null) {
-                            return const Center(
-                                child: CircularProgressIndicator());
+                          if (currentChildId != null) {
+                            if (!_attendanceLoaded) {
+                              context.read<AttendanceChildBloc>().add(LoadAttendanceChild(currentChildId));
+                              _attendanceLoaded = true;
+                            }
+                            if (!_billingLoaded) {
+                              context.read<BillingBloc>().add(LoadBilling(currentChildId));
+                              _billingLoaded = true;
+                            }
                           }
 
                           return ChildInfoWidget(
                             onLoaded: (childId) {
-                              context
-                                  .read<AttendanceChildBloc>()
-                                  .add(LoadAttendanceChild(childId));
+                              if (!_attendanceLoaded) {
+                                context.read<AttendanceChildBloc>().add(LoadAttendanceChild(childId));
+                                _attendanceLoaded = true;
+                              }
+                              if (!_billingLoaded) {
+                                context.read<BillingBloc>().add(LoadBilling(childId));
+                                _billingLoaded = true;
+                              }
                             },
                           );
                         },
-                      ),
+                      )
+
                     ),
 
                     const SizedBox(height: 4),

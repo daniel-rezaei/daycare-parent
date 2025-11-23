@@ -76,7 +76,9 @@ class BillingCard extends StatelessWidget {
         }
 
         if (state is BillingLoaded) {
+          print('📦 BillingLoaded for ${state.billings.length} items');
           final items = buildBillingItems(state.billings);
+          print('📦 Billing items after build: ${items.length}');
           if (items.isEmpty) return const SizedBox.shrink();
 
           return Column(
@@ -145,6 +147,7 @@ class BillingCard extends StatelessWidget {
         }
 
         if (state is BillingError) {
+          print('❌ BillingError: ${state.message}');
           return Center(child: Text("Error: ${state.message}"));
         }
 

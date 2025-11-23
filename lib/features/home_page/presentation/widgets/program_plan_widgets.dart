@@ -10,10 +10,13 @@ import '../../../../core/network/dio_client.dart';
 import '../../../../resorces/pallete.dart';
 import '../../../billing/presentation/screen/billing_page.dart';
 import '../../data/model/biling_item_model.dart';
+import '../../data/model/learning_plan/meal_plan_model.dart';
 import '../../data/repository/learning_plan_repository_impl.dart';
 import '../../domain/usecase/get_learning_plan_usecase.dart';
 import '../bloc/billing_bloc.dart';
 import '../bloc/billing_state.dart';
+import '../bloc/child_bloc.dart';
+import '../bloc/child_state.dart';
 import '../bloc/learning_plan_bloc.dart';
 import '../bloc/learning_plan_event.dart';
 import '../bloc/learning_plan_state.dart';
@@ -24,17 +27,18 @@ import 'meal_card.dart';
 
 String _getMealIcon(String mealType) {
   switch (mealType.toLowerCase()) {
-    case 'breakfast':
+    case 'am snack':
       return 'assets/images/ic_breakfast.svg';
     case 'lunch':
       return 'assets/images/ic_lunch.svg';
     case 'dinner':
-    case 'snack':
+    case 'pm snack':
       return 'assets/images/ic_snack.svg';
     default:
       return 'assets/images/ic_breakfast.svg';
   }
 }
+
 
 class ProgramPlanCard extends StatefulWidget {
   final String? ageGroupId;
@@ -48,7 +52,8 @@ class ProgramPlanCard extends StatefulWidget {
 
 class _ProgramPlanCardState extends State<ProgramPlanCard> {
   late final LearningPlanBloc _learningPlanBloc;
-// یک Map از Category به مسیر SVG
+
+  // یک Map از Category به مسیر SVG
   final Map<String, String> descriptionIcons = {
     'Arts & Crafts': 'assets/images/ic_art_craft.svg',
     'Music & Movement': 'assets/images/ic_music_movement.svg',
@@ -64,7 +69,8 @@ class _ProgramPlanCardState extends State<ProgramPlanCard> {
     'Physical Development': 'assets/images/ic_gross_motor.svg',
     'Gross Motor Skills': 'assets/images/ic_gross_motor.svg',
     'Fine Motor Skills': 'assets/images/ic_fine_motor_skills_activities.svg',
-    'Social Emotional Learning': 'assets/images/ic_social_emotional_learning.svg',
+    'Social Emotional Learning':
+        'assets/images/ic_social_emotional_learning.svg',
     'Cultural Awareness': 'assets/images/ic_cultural_awareness.svg',
     'Health & Nutrition': 'assets/images/ic_health_nutrition.svg',
     'STEM Activities': 'assets/images/ic_stem_activities.svg',
@@ -101,253 +107,342 @@ class _ProgramPlanCardState extends State<ProgramPlanCard> {
         child: Center(child: CircularProgressIndicator()),
       ); // هنوز data نیومده
     }
+    return BlocListener<ChildBloc, ChildState>(
+      listener: (context, childState) {
+        if (childState is ChildListLoaded) {
+          /// 1) ageGroupId جدید از کلاس چایلد انتخاب‌شده
+          final newAgeGroupId =
+              childState.selectedChild.classes.isNotEmpty
+                  ? childState.selectedChild.classes.first.ageGroupId
+                  : null;
 
-    return BlocProvider.value(
-      value: _learningPlanBloc,
-      child: BlocBuilder<LearningPlanBloc, LearningPlanState>(
-        builder: (context, state) {
-          String leftTitle = '';
-          String mainLabel = '';
-          List<String> tags = [];
-          bool isEmptyPlan = false;
-
-          if (state is LearningPlanLoaded) {
-            if (state.categories.isNotEmpty) {
-              final firstCategory = state.categories.first;
-              leftTitle = firstCategory.title ?? '';
-              mainLabel = firstCategory.description ?? '';
-              tags = firstCategory.tags
-                  .where((tag) => tag.trim().isNotEmpty)
-                  .toList();
-            } else {
-              isEmptyPlan = true;
-            }
-          } else if (state is LearningPlanLoading) {
-            return const SizedBox(
-              height: 200,
-              child: Center(child: CircularProgressIndicator()),
-            );
-          } else if (state is LearningPlanError) {
-            return const Center(child: Text("Error loading plan"));
+          /// 2) اگر ageGroupId معتبر بود دوباره لود کن
+          if (newAgeGroupId != null) {
+            _learningPlanBloc.add(LoadPlans(ageGroupId: newAgeGroupId));
           }
 
-          return Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  offset: const Offset(0, -3),
-                  blurRadius: 8,
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 16, left: 8, right: 8, bottom: 8),
-                    child: Text(
-                      "This Week’s Program Plan",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
+          /// 3) بیلینگ و میل‌پلن هم همین‌جا دوباره لود کن
+          context.read<BillingBloc>().add(
+            LoadBilling(childState.selectedChild.id),
+          );
+        }
+      },
+      child: BlocProvider.value(
+        value: _learningPlanBloc,
+        child: BlocBuilder<LearningPlanBloc, LearningPlanState>(
+          builder: (context, state) {
+            String leftTitle = '';
+            String mainLabel = '';
+            List<String> tags = [];
+            bool isEmptyPlan = false;
 
-                  // 👇 بخش اضافه‌شده برای حالت خالی
-                  if (isEmptyPlan)
-                     Padding(
-                      padding: EdgeInsets.symmetric(vertical: 32),
-                      child: Center(
-                        child: Column(
-                          children: [
-                            SvgPicture.asset('assets/images/ic_noplan.svg'),
-                            SizedBox(height: 6,),
-                            Text(
-                              "This week’s plan will appear here soon",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
+            if (state is LearningPlanLoaded) {
+              if (state.categories.isNotEmpty) {
+                final firstCategory = state.categories.first;
+                leftTitle = firstCategory.title ?? '';
+                mainLabel = firstCategory.description ?? '';
+                tags =
+                    firstCategory.tags
+                        .where((tag) => tag.trim().isNotEmpty)
+                        .toList();
+              } else {
+                isEmptyPlan = true;
+              }
+            } else if (state is LearningPlanLoading) {
+              return const SizedBox(
+                height: 200,
+                child: Center(child: CircularProgressIndicator()),
+              );
+            } else if (state is LearningPlanError) {
+              return const Center(child: Text("Error loading plan"));
+            }
+
+            return Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    offset: const Offset(0, -3),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(
+                        top: 16,
+                        left: 8,
+                        right: 8,
+                        bottom: 8,
+                      ),
+                      child: Text(
+                        "This Week’s Program Plan",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    )
-                  else
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8.0, top: 8),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Palette.bgBackground90,
-                          borderRadius: const BorderRadius.all(Radius.circular(8)),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
+                    ),
+
+                    if (isEmptyPlan)
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 32),
+                        child: Center(
+                          child: Column(
                             children: [
+                              SvgPicture.asset('assets/images/ic_noplan.svg'),
+                              SizedBox(height: 6),
                               Text(
-                                leftTitle,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: Palette.borderPrimary,
+                                "This week’s plan will appear here soon",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
                                   fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Container(
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.all(Radius.circular(8)),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            SvgPicture.asset(height: 16,width: 16,
-                                              descriptionIcons[mainLabel] ?? 'assets/images/ic_plan.svg',
-                                            ),
-                                            const SizedBox(width: 6),
-                                            Expanded(
-                                              child: Text(
-                                                mainLabel,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Wrap(
-                                          spacing: 8,
-                                          runSpacing: 8,
-                                          children: tags.asMap().entries.map((entry) {
-                                            final index = entry.key;
-                                            final tag = entry.value;
-                                            return TagChip(
-                                              text: tag,
-                                              color: tagColors[index % tagColors.length],
-                                            );
-                                          }).toList(),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ],
                           ),
                         ),
+                      )
+                    else
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0, top: 8),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Palette.bgBackground90,
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(8),
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              children: [
+                                Text(
+                                  leftTitle,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Palette.borderPrimary,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(8),
+                                      ),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              SvgPicture.asset(
+                                                height: 16,
+                                                width: 16,
+                                                descriptionIcons[mainLabel] ??
+                                                    'assets/images/ic_plan.svg',
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Expanded(
+                                                child: Text(
+                                                  mainLabel,
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Wrap(
+                                            spacing: 8,
+                                            runSpacing: 8,
+                                            children:
+                                                tags.asMap().entries.map((
+                                                  entry,
+                                                ) {
+                                                  final index = entry.key;
+                                                  final tag = entry.value;
+                                                  return TagChip(
+                                                    text: tag,
+                                                    color:
+                                                        tagColors[index %
+                                                            tagColors.length],
+                                                  );
+                                                }).toList(),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
+
+                    const SizedBox(height: 16),
+                    // ----------------- Meal Plan Section -----------------
+                    BlocBuilder<MealPlanBloc, MealPlanState>(
+                      builder: (context, mealState) {
+                        if (mealState is MealPlanLoading) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        } else if (mealState is MealPlanLoaded) {
+                        //  final meals = mealState.meals;
+                          final List<MealPlanModel> meals = mealState.meals.cast<MealPlanModel>();
+                          // 1) نام دیتابیس → نام یکتا برای UI
+                          final Map<String, String> mapDbToUi = {
+                            'am_snack': 'AM Snack',
+                            'lunch': 'Lunch',
+                            'pm_snack': 'PM Snack',
+                            'dinner': 'PM Snack', // اگر دیتابیس dinner بده
+                          };
+
+                          // 2) ترتیب ثابت برای UI
+                          final List<String> defaultMealTypes = [
+                            'am snack',
+                            'lunch',
+                            'pm snack',
+                          ];
+
+                          // 3) ساخت map خالی بر اساس سه کارت
+                          final Map<String, MealPlanModel?> orderedMeals = {
+                            'am snack': null,
+                            'lunch': null,
+                            'pm snack': null,
+                          };
+
+
+
+                          // 4) قرار دادن هر گ meal در جای درست
+                          for (var m in meals) {
+                            final uiLabel = mapDbToUi[m.mealType.toLowerCase()]?.toLowerCase();
+                            if (uiLabel != null && orderedMeals.containsKey(uiLabel)) {
+                              orderedMeals[uiLabel] = m;
+                            }
+                          }
+
+
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 8.0,
+                                  horizontal: 8,
+                                ),
+                                child: Text(
+                                  "Today's Meal",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              SizedBox(
+                                height: 165,
+                                child: ListView.builder(
+                                  itemCount: defaultMealTypes.length,
+                                  scrollDirection: Axis.horizontal,
+                                    itemBuilder: (context, index) {
+                                      final mealType = defaultMealTypes[index];
+                                      final iconPath = _getMealIcon(mealType);
+
+                                      final meal = orderedMeals[mealType];
+                                      final String title =
+                                      meal?.mealName?.isNotEmpty == true ? meal!.mealName! : '-';
+
+                                      return SizedBox(
+                                        width: 130,
+                                        child: MealContainer(
+                                          title: title,
+                                          subtitle: mealType, // می‌توانی برای نمایش حروف بزرگ تبدیلش کنی
+                                          icon: iconPath,
+                                        ),
+                                      );
+                                    }
+                                ),
+                              ),
+                            ],
+                          );
+                        } else if (mealState is MealPlanError) {
+                          return Center(
+                            child: Text('Error: ${mealState.message}'),
+                          );
+                        }
+                        return const SizedBox();
+                      },
                     ),
 
-                  const SizedBox(height: 16),
-                  // ----------------- Meal Plan Section -----------------
-                  BlocBuilder<MealPlanBloc, MealPlanState>(
-                    builder: (context, mealState) {
-                      if (mealState is MealPlanLoading) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (mealState is MealPlanLoaded) {
-                        final meals = mealState.meals;
+                    const SizedBox(height: 16),
 
-                        // آرایه‌ی ثابت برای وعده‌ها (صبحانه، ناهار، میان‌وعده)
-                        final defaultMealTypes = ['breakfast', 'lunch', 'snack'];
-                        final cardCount = defaultMealTypes.length;
+                    // ----------------- Upcoming Events -----------------
+                    UpcomingEventsCardStack(),
+                    const SizedBox(height: 8),
 
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8),
-                              child: Text(
-                                "Today's Meal",
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              height: 165,
-                              child: ListView.builder(
-                                itemCount: cardCount,
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: (context, index) {
-                                  // mealType همیشه از ترتیب ثابت گرفته میشه
-                                  final mealType = defaultMealTypes[index];
-                                  final iconPath = _getMealIcon(mealType);
-
-                                  // اگه داده هست همون رو نشون بده، اگه نیست فقط title خط تیره
-                                  String title = '-';
-                                  if (meals.length > index && meals[index].mealName?.isNotEmpty == true) {
-                                    title = meals[index].mealName!;
-                                  }
-
-                                  return SizedBox(
-                                    width: 130,
-                                    child: MealContainer(
-                                      title: title,
-                                      subtitle: mealType, // همون وعده (breakfast/lunch/snack)
-                                      icon: iconPath,
+                    // ----------------- Billing Section -----------------
+                    if (billingState is BillingLoaded &&
+                        billingState.billings.isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SectionHeader(
+                              title: 'Billing',
+                              onTap: () {
+                                final childState = context.read<ChildBloc>().state;
+                                if (childState is ChildListLoaded) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          BillingPage(childId: childState.selectedChild.id),
                                     ),
                                   );
-                                },
-                              ),
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('No child selected')),
+                                  );
+                                }
+                              },
                             ),
-                          ],
-                        );
-                      } else if (mealState is MealPlanError) {
-                        return Center(child: Text('Error: ${mealState.message}'));
-                      }
-                      return const SizedBox();
-                    },
-                  ),
+                          ),
 
-                  const SizedBox(height: 16),
-
-                  // ----------------- Upcoming Events -----------------
-                  UpcomingEventsCardStack(),
-                  const SizedBox(height: 8),
-
-                  // ----------------- Billing Section -----------------
-                  if (billingState is BillingLoaded && billingState.billings.isNotEmpty)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: SectionHeader(title: 'Billing',onTap:(){
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const BillingPage(),
-                              ),
-                            );
-
-                          }
-                     ,),
-                        ),
-                        const SizedBox(height: 12),
-                        const BillingCard(),
-                      ],
-                    ),
-                ],
+                          const SizedBox(height: 12),
+                          const BillingCard(),
+                        ],
+                      ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
