@@ -1,11 +1,17 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:parent_app/features/resource_home/document/presentation/screen/document_screen.dart';
 import 'package:parent_app/features/resource_home/shared_media/presentation/shared.dart';
 import 'package:parent_app/resorces/pallete.dart';
 
+import '../../../core/network/dio_client.dart';
 import '../form/presentation/screen/form_screen.dart';
+import '../shared_media/data/repository/shared_media_repository_impl.dart';
+import '../shared_media/domain/usecase/get_shared_media_usecase.dart';
+import '../shared_media/presentation/bloc/shared_media_bloc.dart';
+import '../shared_media/presentation/bloc/shared_media_event.dart';
 
 
 
@@ -168,9 +174,17 @@ class _ResourceScreenState extends State<ResourceScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => SharedScreen(childId: widget.activeChildId),
+                                builder: (context) => BlocProvider(
+                                  create: (_) => SharedMediaBloc(
+                                    GetSharedMediaUseCase(
+                                      SharedMediaRepositoryImpl(DioClient()),
+                                    ),
+                                  )..add(LoadSharedMediaEvent(childId: widget.activeChildId)),
+                                  child: SharedScreen(childId: widget.activeChildId),
+                                ),
                               ),
                             );
+
                           },
                           child: Padding(
                             padding: const EdgeInsets.only(left: 16.0,right: 16,top: 14),

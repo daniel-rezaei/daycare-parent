@@ -4,11 +4,12 @@ class SharedMediaEntity {
   final String mediaType;
   final String? createdAt;
   final String? tags;
-  final String? activityType; // اضافه شد
+  final String? role;
+  final String? activityType;
   final List<String>? privacy;
   final List<String>? fileIds;
   final Map<String, dynamic>? thumbnail;
-
+  final String? uploadedBy;
   const SharedMediaEntity({
     required this.id,
     required this.caption,
@@ -17,7 +18,9 @@ class SharedMediaEntity {
     this.activityType,
     this.privacy,
     this.tags,
+    this.role,
     this.fileIds,
     this.thumbnail,
+    this.uploadedBy,
   });
 }

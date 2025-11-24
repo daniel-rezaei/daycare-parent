@@ -1,10 +1,9 @@
-
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/svg.dart';
+
 import '../../../../../resorces/pallete.dart';
 
-void showFilterBottomSheet(BuildContext context) {
-
+Future<Map<String, String>?> showFilterBottomSheet(BuildContext context) {
   final filters = {
     'by date range': [
       'Today',
@@ -25,10 +24,9 @@ void showFilterBottomSheet(BuildContext context) {
     'by student': ['Sara', 'Amelia', 'Olivia', 'Liam'],
   };
 
-
   final Map<String, String> selected = {};
 
-  showModalBottomSheet(
+  return showModalBottomSheet<Map<String, String>>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -77,7 +75,7 @@ void showFilterBottomSheet(BuildContext context) {
                   const Divider(height: 1, color: Palette.bgBorder),
                   const SizedBox(height: 20),
 
-
+                  // Options
                   ...filters.entries.map((entry) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 24.0),
@@ -97,8 +95,7 @@ void showFilterBottomSheet(BuildContext context) {
                             spacing: 10,
                             runSpacing: 10,
                             children: entry.value.map((option) {
-                              final isSelected =
-                                  selected[entry.key] == option;
+                              final isSelected = selected[entry.key] == option;
                               return GestureDetector(
                                 onTap: () {
                                   setState(() {
@@ -112,8 +109,7 @@ void showFilterBottomSheet(BuildContext context) {
                                   ),
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? Palette.txtTagForeground3
-                                        .withOpacity(0.8)
+                                        ? Palette.txtTagForeground3.withOpacity(0.8)
                                         : Palette.borderPrimary20,
                                     borderRadius: BorderRadius.circular(20),
                                   ),
@@ -124,7 +120,7 @@ void showFilterBottomSheet(BuildContext context) {
                                           ? Colors.white
                                           : Palette.textForeground,
                                       fontWeight: FontWeight.w600,
-                                      fontSize: 14
+                                      fontSize: 14,
                                     ),
                                   ),
                                 ),
@@ -141,7 +137,7 @@ void showFilterBottomSheet(BuildContext context) {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pop(context, selected);
+                        Navigator.pop(context, selected); // ✅ برگرداندن selected
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Palette.borderPrimary80,

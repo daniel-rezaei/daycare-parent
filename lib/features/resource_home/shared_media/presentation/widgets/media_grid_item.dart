@@ -109,6 +109,7 @@ class MediaItem {
   final String? caption;
   final List<String>? privacy;
   final String? role;
+  final String? uploadedBy;
 
   MediaItem({
     required this.imagePath,
@@ -120,6 +121,7 @@ class MediaItem {
     this.thumbnailPath,
     this.caption,
     this.role,
+    this.uploadedBy,
   });
 }
 

@@ -21,4 +21,33 @@ class LocalStorage {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('logged_in_user');
   }
+
+  // ذخیره کل یوزرها
+  static Future<void> saveAllUsersJson(List<dynamic> users) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('all_users', jsonEncode(users));
+  }
+
+  static Future<List<Map<String, dynamic>>> getAllUsersJson() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonStr = prefs.getString('all_users');
+    if (jsonStr == null) return [];
+    final list = jsonDecode(jsonStr) as List;
+    return list.map((e) => e as Map<String, dynamic>).toList();
+  }
+
+  // ذخیره کل کانتکت‌ها
+  static Future<void> saveAllContactsJson(List<dynamic> contacts) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('all_contacts', jsonEncode(contacts));
+  }
+
+  static Future<List<Map<String, dynamic>>> getAllContactsJson() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonStr = prefs.getString('all_contacts');
+    if (jsonStr == null) return [];
+    final list = jsonDecode(jsonStr) as List;
+    return list.map((e) => e as Map<String, dynamic>).toList();
+  }
+
 }

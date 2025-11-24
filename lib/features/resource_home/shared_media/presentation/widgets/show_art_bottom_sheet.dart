@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:video_player/video_player.dart';
 import '../../../../../core/utils/local_storage.dart';
+import '../../../../../core/utils/video_downloader.dart';
 import '../../../../../resorces/pallete.dart';
 
 import 'package:flutter/material.dart';
@@ -11,14 +12,23 @@ import 'package:video_player/video_player.dart';
 import '../../../../../resorces/pallete.dart';
 import '../../../../../features/login/data/model/user_model.dart';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:video_player/video_player.dart';
+import '../../../../../core/utils/local_storage.dart';
+import '../../../../../resorces/pallete.dart';
+import '../../../../../features/login/data/model/user_model.dart';
+
 class ArtBottomSheet extends StatefulWidget {
   final String videoUrl;
   final String tag;
+  final String role;
   final String videoUrlThumbnail;
   final String caption;
   final String createdAt;
   final List<String>? privacy;
-
+  final String creatorUserId; // اضافه شد برای کاربری که ویدیو رو آپلود کرده
 
   const ArtBottomSheet({
     super.key,
@@ -26,8 +36,10 @@ class ArtBottomSheet extends StatefulWidget {
     required this.tag,
     required this.caption,
     required this.createdAt,
+    required this.creatorUserId,
     this.videoUrlThumbnail = '',
-    this.privacy
+    this.privacy,
+    required this.role,
   });
 
   @override
@@ -37,12 +49,15 @@ class ArtBottomSheet extends StatefulWidget {
 class _ArtBottomSheetState extends State<ArtBottomSheet> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
-  UserModel? _user;
+  UserModel? _creatorUser;
+  int downloadProgress = 0;
+  String downloadedFilePath = '';
 
   @override
   void initState() {
     super.initState();
-    _loadUser();
+    print('📌 ArtBottomSheet creatorUserId = ${widget.creatorUserId}');
+    _loadCreatorUser();
     if (widget.videoUrl.isNotEmpty) {
       _controller = VideoPlayerController.network(widget.videoUrl)
         ..initialize().then((_) {
@@ -53,14 +68,39 @@ class _ArtBottomSheetState extends State<ArtBottomSheet> {
     }
   }
 
-  Future<void> _loadUser() async {
-    final user = await LocalStorage.getUser();
+  Future<void> _loadCreatorUser() async {
+    if (widget.creatorUserId.isEmpty) {
+      setState(() => _creatorUser = null); // یا پیش‌فرض
+      return;
+    }
+
+    final allUsers = await LocalStorage.getAllUsersJson();
+    final allContacts = await LocalStorage.getAllContactsJson();
+    print('📌 allUsers = $allUsers');
+    print('📌 searching for creatorUserId = ${widget.creatorUserId}');
+    final userJson = allUsers.firstWhere(
+          (u) => u['id'] == widget.creatorUserId,
+      orElse: () => {},
+    );
+
+    if (userJson.isEmpty) return;
+
+    final contactId = userJson['contact_id'];
+    Map<String, dynamic>? contactJson;
+    if (contactId != null && contactId.isNotEmpty) {
+      contactJson = allContacts.firstWhere(
+            (c) => c['id'] == contactId,
+        orElse: () => {},
+      );
+    }
+
     if (mounted) {
       setState(() {
-        _user = user;
+        _creatorUser = UserModel.fromJson(userJson, contactJson, null);
       });
     }
   }
+
 
   String _formatTime(String dateTime) {
     final dt = DateTime.tryParse(dateTime) ?? DateTime.now();
@@ -69,7 +109,6 @@ class _ArtBottomSheetState extends State<ArtBottomSheet> {
     final period = dt.hour >= 12 ? 'PM' : 'AM';
     return '$hour:$minute $period';
   }
-
 
   @override
   void dispose() {
@@ -110,23 +149,64 @@ class _ArtBottomSheetState extends State<ArtBottomSheet> {
                   ),
                 ),
               ),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Palette.borderInput, width: 1),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child:
-                  SvgPicture.asset('assets/images/ic_download_media.svg'),
-                ),
-              ),
+              Column(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      VideoDownloader.downloadVideo(
+                        url: widget.videoUrl,
+                        context: context,
+                        onProgress: (progress) {
+                          setState(() {
+                            downloadProgress = progress; // progress از 0 تا 100
+                          });
+                        },
+                        onComplete: (filePath) {
+                          setState(() {
+                            downloadedFilePath = filePath;
+                            downloadProgress = 0;
+                          });
+                          if (filePath.isNotEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(' saved to $filePath')),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Failed to download')),
+                            );
+                          }
+                        },
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Palette.borderInput, width: 1),
+                      ),
+                      padding: const EdgeInsets.all(8.0),
+                      child: SvgPicture.asset('assets/images/ic_download_media.svg'),
+                    ),
+                  ),
+
+                  if (downloadProgress > 0 && downloadProgress < 100)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Text(
+                        '$downloadProgress%',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Palette.txtPrimary,
+                        ),
+                      ),
+                    ),
+                ],
+              )
             ],
           ),
           const SizedBox(height: 12),
 
-          // Video / Thumbnail
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Container(
@@ -135,16 +215,19 @@ class _ArtBottomSheetState extends State<ArtBottomSheet> {
               color: Colors.black12,
               child: Stack(
                 children: [
-                  if (!_isInitialized)
-                    widget.videoUrlThumbnail.isNotEmpty
-                        ? Image.network(
+                  // نمایش thumbnail همیشه
+                  if (widget.videoUrlThumbnail.isNotEmpty)
+                    Image.network(
                       widget.videoUrlThumbnail,
                       fit: BoxFit.cover,
                       width: double.infinity,
                       height: double.infinity,
                     )
-                        : Container(color: Colors.black12),
-                  if (_isInitialized)
+                  else
+                    Container(color: Colors.black12), // اگر عکس هم نداریم فقط پس‌زمینه
+
+                  // نمایش ویدیو فقط وقتی داریم
+                  if (widget.videoUrl.isNotEmpty && _isInitialized)
                     SizedBox.expand(
                       child: FittedBox(
                         fit: BoxFit.cover,
@@ -155,7 +238,9 @@ class _ArtBottomSheetState extends State<ArtBottomSheet> {
                         ),
                       ),
                     ),
-                  if (widget.videoUrl.isNotEmpty)
+
+                  // نمایش Play Button فقط وقتی ویدیو داریم و در حال پخش نیست
+                  if (widget.videoUrl.isNotEmpty && _isInitialized && !_controller.value.isPlaying)
                     Positioned.fill(
                       child: Center(
                         child: GestureDetector(
@@ -166,9 +251,7 @@ class _ArtBottomSheetState extends State<ArtBottomSheet> {
                                   : _controller.play();
                             });
                           },
-                          child: _controller.value.isPlaying
-                              ? const SizedBox.shrink()
-                              : Container(
+                          child: Container(
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
                             ),
@@ -187,20 +270,22 @@ class _ArtBottomSheetState extends State<ArtBottomSheet> {
             ),
           ),
 
+
+
           const SizedBox(height: 16),
 
-          // Info Row با اسم و آواتار کاربر لاگین شده
+
           Row(
             children: [
               CircleAvatar(
                 radius: 18,
-                backgroundImage: getUserAvatar(_user?.photo),
+                backgroundImage: getUserAvatar(_creatorUser?.photo),
               ),
               const SizedBox(width: 8),
               Text(
-                _user != null
-                    ? '${_user!.firstName} ${_user!.lastName}'
-                    : 'Loading...',
+                _creatorUser != null
+                    ? '${_creatorUser!.firstName} ${_creatorUser!.lastName}'
+                    : 'Unknown',
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 18,
@@ -209,13 +294,14 @@ class _ArtBottomSheetState extends State<ArtBottomSheet> {
               ),
               const SizedBox(width: 4),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: Palette.bgColorPink,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  widget.privacy?.join(', ') ?? '',
+                  widget.role ?? '',
                   style: TextStyle(
                     color: Palette.txtTagForeground2,
                     fontSize: 12,
@@ -240,7 +326,6 @@ class _ArtBottomSheetState extends State<ArtBottomSheet> {
 
           const SizedBox(height: 12),
 
-          // Description از سرور
           Text(
             widget.caption.isNotEmpty ? widget.caption : 'No caption',
             style: TextStyle(
@@ -266,7 +351,7 @@ ImageProvider getUserAvatar(String? photoId) {
     return const AssetImage('assets/images/avatar_placeholder.png');
   }
 
-  return CachedNetworkImageProvider( url);
+  return CachedNetworkImageProvider(url);
 }
 
 String getUserPhotoUrl(String id) {
