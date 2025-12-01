@@ -51,5 +51,8 @@ class Palette {
   static const Color bgColorMute = Color(0xffF6F1FF);
   static const Color bgColorTab = Color(0xffF1EAFD);
   static const Color bgColorNotification = Color(0xffF5EFFF);
+  static const Color bgMood = Color(0xffF5F2FB);
+  static const Color backMood = Color(0xffF3ECFF);
+  static const Color backMainMood = Color(0xffEADDFF);
 
 }

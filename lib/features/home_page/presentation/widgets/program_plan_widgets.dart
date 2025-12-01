@@ -52,7 +52,7 @@ class ProgramPlanCard extends StatefulWidget {
 
 class _ProgramPlanCardState extends State<ProgramPlanCard> {
   late final LearningPlanBloc _learningPlanBloc;
-
+  bool _firstLoad = true;
   // یک Map از Category به مسیر SVG
   final Map<String, String> descriptionIcons = {
     'Arts & Crafts': 'assets/images/ic_art_craft.svg',
@@ -109,22 +109,19 @@ class _ProgramPlanCardState extends State<ProgramPlanCard> {
     }
     return BlocListener<ChildBloc, ChildState>(
       listener: (context, childState) {
-        if (childState is ChildListLoaded) {
-          /// 1) ageGroupId جدید از کلاس چایلد انتخاب‌شده
-          final newAgeGroupId =
-              childState.selectedChild.classes.isNotEmpty
-                  ? childState.selectedChild.classes.first.ageGroupId
-                  : null;
+        if (!_firstLoad) return;
 
-          /// 2) اگر ageGroupId معتبر بود دوباره لود کن
+        if (childState is ChildListLoaded) {
+          final newAgeGroupId = childState.selectedChild.classes.isNotEmpty
+              ? childState.selectedChild.classes.first.ageGroupId
+              : null;
           if (newAgeGroupId != null) {
             _learningPlanBloc.add(LoadPlans(ageGroupId: newAgeGroupId));
           }
-
-          /// 3) بیلینگ و میل‌پلن هم همین‌جا دوباره لود کن
           context.read<BillingBloc>().add(
             LoadBilling(childState.selectedChild.id),
           );
+          _firstLoad = false;
         }
       },
       child: BlocProvider.value(

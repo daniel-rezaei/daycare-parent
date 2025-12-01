@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:parent_app/features/activity_attendance/presentation/activity_screen.dart';
 import 'package:parent_app/features/home_page/presentation/widgets/section_header.dart';
 import '../../../../resorces/pallete.dart';
 import '../../../../resorces/style.dart';
@@ -145,7 +146,16 @@ class AISummaryWidget extends StatelessWidget {
               // ✅ بخش AI Summary (همیشه نمایش داده شود)
               Padding(
                 padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16, top: 12),
-                child: SectionHeader(title: "AI Summary", onTap: () {}),
+                child: SectionHeader(title: "AI Summary", onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          ActivityScreen(childId: '', name: '',),
+                    ),
+                  );
+
+                }),
               ),
               const Row(children: [Expanded(child: CheckInSummaryCard())]),
             ],

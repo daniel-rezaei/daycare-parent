@@ -252,14 +252,14 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
 
                           return ChildInfoWidget(
                             onLoaded: (childId) {
-                              if (!_attendanceLoaded) {
-                                context.read<AttendanceChildBloc>().add(LoadAttendanceChild(childId));
-                                _attendanceLoaded = true;
-                              }
-                              if (!_billingLoaded) {
-                                context.read<BillingBloc>().add(LoadBilling(childId));
-                                _billingLoaded = true;
-                              }
+                              // if (!_attendanceLoaded) {
+                              //   context.read<AttendanceChildBloc>().add(LoadAttendanceChild(childId));
+                              //   _attendanceLoaded = true;
+                              // }
+                              // if (!_billingLoaded) {
+                              //   context.read<BillingBloc>().add(LoadBilling(childId));
+                              //   _billingLoaded = true;
+                              // }
                             },
                           );
                         },
